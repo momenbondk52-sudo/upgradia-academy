@@ -5,54 +5,61 @@
 :root {
   --font-size: 16px;
 
-  /* Spider-Man Color Palette - Exact Spec */
-  --background: #0a0a0f;
+  /* Spider-Man Game UI - Brighter & Vibrant */
+  --background: #1a1a2e;
   --foreground: #ffffff;
-  --card: #141419;
+  --card: #252542;
   --card-foreground: #ffffff;
-  --popover: #141419;
+  --popover: #2a2a45;
   --popover-foreground: #ffffff;
 
-  /* Primary: Spider Red */
-  --primary: #e31b23;
+  /* Primary: Spider Red - Brighter */
+  --primary: #ff2b36;
   --primary-foreground: #ffffff;
+  --primary-glow: rgba(255, 43, 54, 0.6);
 
-  /* Secondary: Spider Blue */
-  --secondary: #0b57a4;
+  /* Secondary: Spider Blue - Brighter */
+  --secondary: #1e7dd6;
   --secondary-foreground: #ffffff;
+  --secondary-glow: rgba(30, 125, 214, 0.6);
 
-  /* Accent: Cyber Blue (for admin) */
-  --accent: #007acc;
-  --accent-foreground: #ffffff;
+  /* Accent: Cyber Blue - Vibrant */
+  --accent: #00d9ff;
+  --accent-foreground: #0a0a0f;
+  --accent-glow: rgba(0, 217, 255, 0.6);
 
-  --muted: #1b1b25;
-  --muted-foreground: #a8a8a8;
-  --destructive: #e31b23;
+  /* Highlight: Energy Yellow */
+  --highlight: #ffd700;
+  --highlight-glow: rgba(255, 215, 0, 0.6);
+
+  --muted: #2d2d48;
+  --muted-foreground: #b8b8d0;
+  --destructive: #ff2b36;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.15);
   --input: transparent;
-  --input-background: #0b0b12;
-  --switch-background: #1b1b25;
+  --input-background: rgba(255, 255, 255, 0.05);
+  --switch-background: #2d2d48;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #0b57a4;
+  --ring: #1e7dd6;
 
-  --chart-1: #e31b23;
-  --chart-2: #0b57a4;
-  --chart-3: #007acc;
-  --chart-4: #e50914;
-  --chart-5: #0080ff;
+  --chart-1: #ff2b36;
+  --chart-2: #1e7dd6;
+  --chart-3: #00d9ff;
+  --chart-4: #ffd700;
+  --chart-5: #a855f7;
 
-  --radius: 0.5rem;
+  --radius: 1rem;
 
-  --sidebar: #141419;
+  --sidebar: #1f1f38;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #e31b23;
+  --sidebar-primary: #ff2b36;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1b1b20;
+  --sidebar-accent: #2a2a45;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #0b57a4;
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --sidebar-ring: #1e7dd6;
 }
 
 @theme inline {
@@ -82,10 +89,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -112,6 +119,7 @@
       -apple-system,
       BlinkMacSystemFont,
       sans-serif;
+    overflow-x: hidden;
   }
 
   h1,
@@ -205,64 +213,326 @@ html {
   font-size: var(--font-size);
 }
 
-/* Spider Web Animation Background - Cleaner version */
-@keyframes webPulse {
+/* Game-Style Glowing Background */
+@keyframes webEnergy {
   0%,
   100% {
-    opacity: 0.05;
+    opacity: 0.3;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.12;
+    opacity: 0.6;
+    transform: scale(1.05);
   }
 }
 
-.web-background {
-  background-image:
+@keyframes floatingParticles {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  50% {
+    transform: translateY(-10px) translateX(-10px);
+  }
+  75% {
+    transform: translateY(-30px) translateX(5px);
+  }
+}
+
+.game-background {
+  background:
     radial-gradient(
-      circle at 20% 30%,
-      rgba(227, 27, 35, 0.06) 0%,
+      ellipse at top,
+      rgba(255, 43, 54, 0.15),
       transparent 50%
     ),
     radial-gradient(
-      circle at 80% 70%,
-      rgba(11, 87, 164, 0.06) 0%,
+      ellipse at bottom,
+      rgba(30, 125, 214, 0.15),
       transparent 50%
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(0, 217, 255, 0.08),
+      transparent 70%
     );
-  animation: webPulse 8s ease-in-out infinite;
+  animation: webEnergy 6s ease-in-out infinite;
 }
 
-/* Clean Border Glow Effects - Subtle */
+/* Vibrant Glow Effects - Game Style */
 .glow-red {
-  border: 1px solid rgba(227, 27, 35, 0.3);
-  box-shadow: 0 0 8px rgba(227, 27, 35, 0.15);
+  border: 2px solid rgba(255, 43, 54, 0.5);
+  box-shadow:
+    0 0 20px rgba(255, 43, 54, 0.3),
+    inset 0 0 20px rgba(255, 43, 54, 0.1);
 }
 
 .glow-blue {
-  border: 1px solid rgba(11, 87, 164, 0.3);
-  box-shadow: 0 0 8px rgba(11, 87, 164, 0.15);
+  border: 2px solid rgba(30, 125, 214, 0.5);
+  box-shadow:
+    0 0 20px rgba(30, 125, 214, 0.3),
+    inset 0 0 20px rgba(30, 125, 214, 0.1);
 }
 
-.glow-accent {
-  border: 1px solid rgba(0, 122, 204, 0.3);
-  box-shadow: 0 0 8px rgba(0, 122, 204, 0.15);
+.glow-cyan {
+  border: 2px solid rgba(0, 217, 255, 0.5);
+  box-shadow:
+    0 0 20px rgba(0, 217, 255, 0.3),
+    inset 0 0 20px rgba(0, 217, 255, 0.1);
 }
 
-/* Web Line Motif */
-.web-lines {
+.glow-gold {
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 0.3),
+    inset 0 0 20px rgba(255, 215, 0, 0.1);
+}
+
+/* Animated Web Pattern */
+@keyframes webPulse {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.web-pattern {
   background-image:
     linear-gradient(
       90deg,
-      rgba(255, 255, 255, 0.03) 1px,
+      rgba(255, 255, 255, 0.05) 1px,
       transparent 1px
     ),
     linear-gradient(
-      rgba(255, 255, 255, 0.03) 1px,
+      rgba(255, 255, 255, 0.05) 1px,
       transparent 1px
     );
-  background-size: 40px 40px;
+  background-size: 50px 50px;
+  animation: webPulse 4s ease-in-out infinite;
 }
 
-/* Typing Animation */
+/* Hexagon Pattern - Game UI Style */
+.hex-pattern {
+  background-image:
+    repeating-linear-gradient(
+      30deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 10px
+    ),
+    repeating-linear-gradient(
+      150deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Glow Pulse for Important Elements */
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px var(--primary-glow),
+      inset 0 0 20px rgba(255, 43, 54, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 40px var(--primary-glow),
+      inset 0 0 30px rgba(255, 43, 54, 0.2);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Shimmer Effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
+}
+
+/* Card Hover Effects - Game Style */
+.game-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.game-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 43, 54, 0.1),
+    transparent 40%,
+    transparent 60%,
+    rgba(30, 125, 214, 0.1)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.game-card:hover::before {
+  opacity: 1;
+}
+
+.game-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 10px 40px rgba(255, 43, 54, 0.2),
+    0 0 80px rgba(30, 125, 214, 0.15);
+}
+
+/* XP Bar Animation */
+@keyframes fillBar {
+  from {
+    width: 0%;
+  }
+}
+
+.xp-bar-fill {
+  animation: fillBar 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom Scrollbar - Game Style */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff2b36, #1e7dd6);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff4550, #2e8de6);
+  background-clip: padding-box;
+}
+
+/* Button Press Effect */
+.btn-press {
+  transition: all 0.1s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/* Text Glow */
+.text-glow-red {
+  text-shadow:
+    0 0 20px rgba(255, 43, 54, 0.8),
+    0 0 40px rgba(255, 43, 54, 0.4);
+}
+
+.text-glow-blue {
+  text-shadow:
+    0 0 20px rgba(30, 125, 214, 0.8),
+    0 0 40px rgba(30, 125, 214, 0.4);
+}
+
+.text-glow-cyan {
+  text-shadow:
+    0 0 20px rgba(0, 217, 255, 0.8),
+    0 0 40px rgba(0, 217, 255, 0.4);
+}
+
+/* Scan Line Effect */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+
+.scanline::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 217, 255, 0.8),
+    transparent
+  );
+  animation: scanline 3s linear infinite;
+}
+
+/* Floating Animation */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Typing Effect */
 @keyframes typing {
   from {
     width: 0;
@@ -278,21 +548,44 @@ html {
   }
 }
 
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    #ff2b36,
+    #1e7dd6,
+    #00d9ff
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(220, 0, 40, 0.5);
-  border-radius: 3px;
+/* Level Up Flash */
+@keyframes levelUpFlash {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(220, 0, 40, 0.7);
+.level-up-flash {
+  animation: levelUpFlash 0.5s ease-out;
 }

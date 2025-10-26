@@ -109,9 +109,7 @@ export default function App() {
         {appState === "auth" && selectedRole && (
           <AuthCard
             key="auth"
-            role={
-              selectedRole as "student" | "professor" | "ta"
-            }
+            role={selectedRole}
             onBack={handleAuthBack}
             onLogin={handleLogin}
             language={language}

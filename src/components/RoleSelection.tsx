@@ -1,12 +1,11 @@
-import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { motion } from "motion/react";
 import {
   GraduationCap,
-  Users,
-  Shield,
   BookOpen,
-  UserCog,
+  Shield,
+  Sparkles,
 } from "lucide-react";
+import { soundManager } from "../utils/soundManager";
 
 interface RoleSelectionProps {
   onRoleSelect: (
@@ -15,120 +14,99 @@ interface RoleSelectionProps {
   language: "en" | "ar";
 }
 
+const roles = [
+  {
+    id: "student" as const,
+    icon: GraduationCap,
+    titleEn: "Student",
+    titleAr: "طالب",
+    descEn: "Start your learning journey",
+    descAr: "ابدأ رحلتك التعليمية",
+    gradient: "from-primary via-primary/80 to-primary/60",
+    glow: "glow-red",
+    iconColor: "text-white",
+  },
+  {
+    id: "professor" as const,
+    icon: BookOpen,
+    titleEn: "Professor",
+    titleAr: "أستاذ",
+    descEn: "Teach and inspire students",
+    descAr: "علّم وألهم الطلاب",
+    gradient: "from-secondary via-secondary/80 to-secondary/60",
+    glow: "glow-blue",
+    iconColor: "text-white",
+  },
+  {
+    id: "ta" as const,
+    icon: Sparkles,
+    titleEn: "Teaching Assistant",
+    titleAr: "مساعد تدريس",
+    descEn: "Support learning excellence",
+    descAr: "ادعم التميز التعليمي",
+    gradient: "from-accent via-accent/80 to-accent/60",
+    glow: "glow-cyan",
+    iconColor: "text-background",
+  },
+  {
+    id: "admin" as const,
+    icon: Shield,
+    titleEn: "Administrator",
+    titleAr: "مسؤول",
+    descEn: "Manage the academy",
+    descAr: "أدر الأكاديمية",
+    gradient: "from-purple-500 via-purple-600 to-purple-700",
+    glow: "glow-cyan",
+    iconColor: "text-white",
+  },
+];
+
 export function RoleSelection({
   onRoleSelect,
   language,
 }: RoleSelectionProps) {
-  const [instructorExpanded, setInstructorExpanded] =
-    useState(false);
-  const [hoveredCard, setHoveredCard] = useState<string | null>(
-    null,
-  );
-
-  const translations = {
-    en: {
-      title: "Select Your Role",
-      student: "Student",
-      instructor: "Instructor",
-      admin: "Admin",
-      professor: "Professor",
-      ta: "Teaching Assistant",
-      back: "Back",
-      studentDesc: "Learn and earn XP",
-      instructorDesc: "Teach and manage",
-      adminDesc: "Platform management",
-      professorDesc: "Course instructor",
-      taDesc: "Teaching support",
-    },
-    ar: {
-      title: "اختر دورك",
-      student: "طالب",
-      instructor: "مدرس",
-      admin: "مسؤول",
-      professor: "أستاذ",
-      ta: "مساعد تدريس",
-      back: "رجوع",
-      studentDesc: "تعلم واكسب النقاط",
-      instructorDesc: "علّم وأدر",
-      adminDesc: "إدارة المنصة",
-      professorDesc: "مدرس المقرر",
-      taDesc: "دعم التدريس",
-    },
+  const handleRoleClick = (roleId: (typeof roles)[0]["id"]) => {
+    soundManager.playClick();
+    setTimeout(() => {
+      soundManager.playTransition();
+      onRoleSelect(roleId);
+    }, 200);
   };
 
-  const t = translations[language];
-
-  const mainRoles = [
-    {
-      id: "student",
-      icon: GraduationCap,
-      title: t.student,
-      desc: t.studentDesc,
-      color: "primary",
-    },
-    {
-      id: "instructor",
-      icon: Users,
-      title: t.instructor,
-      desc: t.instructorDesc,
-      color: "secondary",
-    },
-    {
-      id: "admin",
-      icon: Shield,
-      title: t.admin,
-      desc: t.adminDesc,
-      color: "accent",
-      disabled: true,
-    },
-  ];
-
-  const instructorRoles = [
-    {
-      id: "professor",
-      icon: BookOpen,
-      title: t.professor,
-      desc: t.professorDesc,
-      color: "secondary",
-    },
-    {
-      id: "ta",
-      icon: UserCog,
-      title: t.ta,
-      desc: t.taDesc,
-      color: "secondary",
-    },
-  ];
-
-  const handleCardClick = (roleId: string) => {
-    if (roleId === "instructor") {
-      setInstructorExpanded(true);
-    } else if (roleId === "admin") {
-      // Admin is disabled at this stage
-      return;
-    } else {
-      onRoleSelect(roleId as "student" | "professor" | "ta");
-    }
+  const handleHover = () => {
+    soundManager.playHover();
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center web-background overflow-hidden p-4">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-20">
-        {[...Array(20)].map((_, i) => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center game-background overflow-hidden"
+    >
+      {/* Animated Background */}
+      <div className="absolute inset-0 hex-pattern opacity-20" />
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(15)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 bg-accent rounded-full"
+            className="absolute w-2 h-2 rounded-full"
             style={{
+              background: i % 2 === 0 ? "#ff2b36" : "#1e7dd6",
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
+              filter: "blur(1px)",
             }}
             animate={{
-              scale: [0, 1, 0],
-              opacity: [0, 1, 0],
+              y: [0, -40, 0],
+              x: [0, Math.random() * 30 - 15, 0],
+              opacity: [0.3, 0.8, 0.3],
+              scale: [1, 1.5, 1],
             }}
             transition={{
-              duration: 3,
+              duration: 4 + Math.random() * 3,
               repeat: Infinity,
               delay: Math.random() * 3,
             }}
@@ -136,198 +114,140 @@ export function RoleSelection({
         ))}
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl">
-        <motion.h1
-          className="text-center mb-12 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
-          initial={{ opacity: 0, y: -20 }}
+      <div className="relative z-10 container max-w-7xl px-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-12"
         >
-          {t.title}
-        </motion.h1>
+          <h1 className="text-4xl md:text-6xl font-black mb-4 gradient-text">
+            {language === "en"
+              ? "Choose Your Role"
+              : "اختر دورك"}
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground">
+            {language === "en"
+              ? "Select how you want to experience Upgradia Academy"
+              : "حدد كيف تريد تجربة أكاديمية أبجراديا"}
+          </p>
+        </motion.div>
 
-        <AnimatePresence mode="wait">
-          {!instructorExpanded ? (
-            <motion.div
-              key="main-roles"
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {mainRoles.map((role, index) => (
-                <motion.div
-                  key={role.id}
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: index * 0.1,
-                    duration: 0.5,
-                  }}
-                  whileHover={
-                    role.disabled ? {} : { scale: 1.05 }
-                  }
-                  onHoverStart={() =>
-                    !role.disabled && setHoveredCard(role.id)
-                  }
-                  onHoverEnd={() => setHoveredCard(null)}
-                  style={{
-                    filter:
-                      hoveredCard && hoveredCard !== role.id
-                        ? "blur(2px)"
-                        : "none",
-                    opacity:
-                      hoveredCard && hoveredCard !== role.id
-                        ? 0.6
-                        : 1,
-                  }}
-                  className="transition-all duration-300"
-                >
-                  <button
-                    onClick={() => handleCardClick(role.id)}
-                    disabled={role.disabled}
-                    className={`w-full h-80 bg-card rounded-xl p-8 flex flex-col items-center justify-center gap-6 transition-all duration-300 relative overflow-hidden group ${
-                      role.disabled
-                        ? "cursor-not-allowed border border-muted/30 opacity-50"
-                        : role.color === "primary"
-                          ? "border border-primary/20 hover:border-primary/50 hover:glow-red"
-                          : role.color === "secondary"
-                            ? "border border-secondary/20 hover:border-secondary/50 hover:glow-blue"
-                            : "border border-accent/20 hover:border-accent/50 hover:glow-accent"
-                    }`}
-                  >
-                    {/* Clean gradient background on hover */}
-                    {!role.disabled && (
-                      <motion.div
-                        className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 ${
-                          role.color === "primary"
-                            ? "bg-gradient-to-br from-primary to-transparent"
-                            : role.color === "secondary"
-                              ? "bg-gradient-to-br from-secondary to-transparent"
-                              : "bg-gradient-to-br from-accent to-transparent"
-                        }`}
-                      />
-                    )}
-
-                    <motion.div
-                      className="relative"
-                      animate={
-                        hoveredCard === role.id
-                          ? { rotate: [0, -10, 10, -10, 0] }
-                          : {}
-                      }
-                      transition={{ duration: 0.5 }}
-                    >
-                      <role.icon
-                        className={`w-24 h-24 ${
-                          role.color === "primary"
-                            ? "text-primary"
-                            : role.color === "secondary"
-                              ? "text-secondary"
-                              : "text-accent"
-                        }`}
-                      />
-                    </motion.div>
-
-                    <div className="text-center">
-                      <h3 className="mb-2">{role.title}</h3>
-                      <p className="text-muted-foreground text-sm">
-                        {role.desc}
-                      </p>
-                    </div>
-
-                    {/* Corner accent line */}
-                    <div
-                      className={`absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 rounded-tr-xl ${
-                        role.color === "primary"
-                          ? "border-primary/30"
-                          : role.color === "secondary"
-                            ? "border-secondary/30"
-                            : "border-accent/30"
-                      } opacity-0 group-hover:opacity-100 transition-opacity`}
-                    />
-                  </button>
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="instructor-roles"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col items-center gap-8"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-3xl">
-                {instructorRoles.map((role, index) => (
-                  <motion.div
-                    key={role.id}
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      delay: index * 0.1,
-                      duration: 0.5,
-                    }}
-                    whileHover={{ scale: 1.05 }}
-                    onHoverStart={() => setHoveredCard(role.id)}
-                    onHoverEnd={() => setHoveredCard(null)}
-                    style={{
-                      filter:
-                        hoveredCard && hoveredCard !== role.id
-                          ? "blur(2px)"
-                          : "none",
-                      opacity:
-                        hoveredCard && hoveredCard !== role.id
-                          ? 0.6
-                          : 1,
-                    }}
-                    className="transition-all duration-300"
-                  >
-                    <button
-                      onClick={() => handleCardClick(role.id)}
-                      className="w-full h-80 bg-card border border-secondary/20 hover:border-secondary/50 hover:glow-blue rounded-xl p-8 flex flex-col items-center justify-center gap-6 transition-all duration-300 relative overflow-hidden group"
-                    >
-                      <motion.div className="absolute inset-0 bg-gradient-to-br from-secondary to-transparent opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
-
-                      <motion.div
-                        className="relative"
-                        animate={
-                          hoveredCard === role.id
-                            ? { rotate: [0, -10, 10, -10, 0] }
-                            : {}
-                        }
-                        transition={{ duration: 0.5 }}
-                      >
-                        <role.icon className="w-24 h-24 text-secondary" />
-                      </motion.div>
-
-                      <div className="text-center">
-                        <h3 className="mb-2">{role.title}</h3>
-                        <p className="text-muted-foreground text-sm">
-                          {role.desc}
-                        </p>
-                      </div>
-
-                      <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 rounded-tr-xl border-secondary/30 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </button>
-                  </motion.div>
-                ))}
-              </div>
-
+        {/* Role Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          {roles.map((role, index) => {
+            const Icon = role.icon;
+            return (
               <motion.button
-                onClick={() => setInstructorExpanded(false)}
-                className="px-8 py-3 border-2 border-muted-foreground/30 hover:border-accent text-muted-foreground hover:text-accent rounded-lg transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
+                key={role.id}
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{
+                  delay: 0.3 + index * 0.1,
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 20,
+                }}
+                whileHover={{
+                  scale: 1.05,
+                  y: -8,
+                  transition: { duration: 0.2 },
+                }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => handleRoleClick(role.id)}
+                onMouseEnter={handleHover}
+                className={`group relative p-8 rounded-3xl bg-gradient-to-br ${role.gradient} ${role.glow} overflow-hidden transition-all duration-300 btn-press`}
               >
-                {t.back}
+                {/* Shimmer Effect */}
+                <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                {/* Content */}
+                <div className="relative z-10 flex flex-col items-center gap-4">
+                  {/* Icon Container */}
+                  <motion.div
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                    className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center"
+                  >
+                    <Icon
+                      className={`w-10 h-10 ${role.iconColor}`}
+                      strokeWidth={2.5}
+                    />
+                  </motion.div>
+
+                  {/* Text */}
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold mb-2 text-white">
+                      {language === "en"
+                        ? role.titleEn
+                        : role.titleAr}
+                    </h3>
+                    <p className="text-sm text-white/80">
+                      {language === "en"
+                        ? role.descEn
+                        : role.descAr}
+                    </p>
+                  </div>
+
+                  {/* Enter Arrow */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    whileHover={{ opacity: 1, x: 0 }}
+                    className="absolute bottom-6 right-6"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Glow Border Animation */}
+                <motion.div
+                  className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: `linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent)`,
+                  }}
+                />
               </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            );
+          })}
+        </div>
+
+        {/* Footer Hint */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="text-center mt-12"
+        >
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-card/30 backdrop-blur-sm border border-border">
+            <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            <p className="text-sm text-muted-foreground">
+              {language === "en"
+                ? "Click on a card to continue"
+                : "انقر على بطاقة للمتابعة"}
+            </p>
+          </div>
+        </motion.div>
       </div>
-    </div>
+
+      {/* Corner Decorations */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-transparent rounded-br-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/10 to-transparent rounded-tl-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-accent/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+    </motion.div>
   );
 }

@@ -1,30 +1,32 @@
-import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useState } from "react";
 import {
   Home,
   BookOpen,
-  Award,
-  User,
-  Bell,
+  Trophy,
+  Users,
+  MessageSquare,
+  Settings,
   LogOut,
+  Zap,
+  Star,
+  Target,
+  TrendingUp,
+  Award,
+  Clock,
+  Bell,
   Menu,
   X,
-  MessageCircle,
-  TrendingUp,
-  Trophy,
-  Zap,
 } from "lucide-react";
-import { Progress } from "./ui/progress";
+import { Button } from "./ui/button";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "./ui/avatar";
+import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
-import { NewsFeed } from "./student/NewsFeed";
-import { Courses } from "./student/Courses";
-import { Grades } from "./student/Grades";
-import { Profile } from "./student/Profile";
+import { soundManager } from "../utils/soundManager";
 import { AIBot } from "./AIBot";
 
 interface StudentDashboardProps {
@@ -38,322 +40,610 @@ export function StudentDashboard({
   onLogout,
   language,
 }: StudentDashboardProps) {
-  const [currentPage, setCurrentPage] = useState<
-    "news" | "courses" | "grades" | "profile"
-  >("news");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState("home");
   const [showAIBot, setShowAIBot] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Mock user data with XP
-  const [studentData, setStudentData] = useState({
-    xp: 750,
-    level: 7,
-    nextLevelXP: 800,
-    streak: 12,
-    notifications: 3,
-  });
-
-  const translations = {
-    en: {
-      dashboard: "Dashboard",
-      newsFeed: "News Feed",
-      courses: "My Courses",
-      grades: "Grades & Performance",
-      profile: "Profile",
-      logout: "Logout",
-      level: "Level",
-      xp: "XP",
-      streak: "Day Streak",
-      notifications: "Notifications",
-    },
-    ar: {
-      dashboard: "لوحة التحكم",
-      newsFeed: "الأخبار",
-      courses: "مقرراتي",
-      grades: "الدرجات والأداء",
-      profile: "الملف الشخصي",
-      logout: "تسجيل الخروج",
-      level: "المستوى",
-      xp: "نقاط الخبرة",
-      streak: "سلسلة الأيام",
-      notifications: "الإشعارات",
-    },
+  // Mock student data - game-like stats
+  const studentData = {
+    name: user?.name || "Peter Parker",
+    level: 12,
+    xp: 3420,
+    xpToNext: 5000,
+    rank: "Elite Learner",
+    streak: 7,
+    achievements: 23,
+    courses: 4,
   };
 
-  const t = translations[language];
-
   const menuItems = [
-    { id: "news", label: t.newsFeed, icon: Home },
-    { id: "courses", label: t.courses, icon: BookOpen },
-    { id: "grades", label: t.grades, icon: Award },
-    { id: "profile", label: t.profile, icon: User },
+    {
+      id: "home",
+      icon: Home,
+      labelEn: "Home",
+      labelAr: "الرئيسية",
+    },
+    {
+      id: "courses",
+      icon: BookOpen,
+      labelEn: "Courses",
+      labelAr: "الدورات",
+    },
+    {
+      id: "progress",
+      icon: TrendingUp,
+      labelEn: "Progress",
+      labelAr: "التقدم",
+    },
+    {
+      id: "leaderboard",
+      icon: Trophy,
+      labelEn: "Leaderboard",
+      labelAr: "المتصدرين",
+    },
+    {
+      id: "community",
+      icon: Users,
+      labelEn: "Community",
+      labelAr: "المجتمع",
+    },
+    {
+      id: "messages",
+      icon: MessageSquare,
+      labelEn: "Messages",
+      labelAr: "الرسائل",
+    },
   ];
 
-  const xpProgress =
-    (studentData.xp / studentData.nextLevelXP) * 100;
+  const handleTabChange = (tabId: string) => {
+    soundManager.playTabSwitch();
+    setActiveTab(tabId);
+    setSidebarOpen(false);
+  };
+
+  const handleLogout = () => {
+    soundManager.playClick();
+    onLogout();
+  };
+
+  const handleAIBot = () => {
+    soundManager.playClick();
+    setShowAIBot(!showAIBot);
+  };
 
   return (
-    <div className="fixed inset-0 bg-background flex overflow-hidden">
+    <div className="fixed inset-0 game-background overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 hex-pattern opacity-10" />
+
+      {/* Mobile Menu Toggle */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed top-6 left-6 z-50 lg:hidden w-12 h-12 rounded-xl bg-card/80 backdrop-blur-xl border border-border flex items-center justify-center btn-press"
+      >
+        {sidebarOpen ? (
+          <X className="w-5 h-5" />
+        ) : (
+          <Menu className="w-5 h-5" />
+        )}
+      </motion.button>
+
       {/* Sidebar */}
       <AnimatePresence>
-        {sidebarOpen && (
-          <motion.aside
+        {(sidebarOpen || window.innerWidth >= 1024) && (
+          <motion.div
             initial={{ x: -300 }}
             animate={{ x: 0 }}
             exit={{ x: -300 }}
-            transition={{ type: "spring", damping: 20 }}
-            className="w-72 bg-card border-r border-border flex flex-col"
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+            }}
+            className="fixed left-0 top-0 bottom-0 w-72 bg-card/80 backdrop-blur-2xl border-r border-border z-40 flex flex-col"
           >
-            {/* Logo - Clean */}
-            <div className="p-6 border-b border-border/50">
+            {/* Logo/Header */}
+            <div className="p-6 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                  <span className="text-white font-bold">
-                    U
-                  </span>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center glow-red">
+                  <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="tracking-wider font-extrabold">
+                  <h1 className="font-black gradient-text">
                     UPGRADIA
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {t.dashboard}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    Academy
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* User Profile Card - Clean */}
-            <div className="p-6 border-b border-border/50">
+            {/* User Profile Card */}
+            <div className="p-6 border-b border-border">
               <div className="flex items-center gap-3 mb-4">
-                <Avatar className="w-12 h-12 border-2 border-primary/30">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {user?.fullName?.[0] || "S"}
-                  </AvatarFallback>
+                <Avatar className="w-14 h-14 border-2 border-primary/50 glow-red">
+                  <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" />
+                  <AvatarFallback>PP</AvatarFallback>
                 </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="truncate font-medium">
-                    {user?.fullName || "Student Name"}
-                  </p>
-                  <p className="text-sm text-muted-foreground font-mono">
-                    {user?.studentCode || "STU12345"}
-                  </p>
+                <div className="flex-1">
+                  <h3 className="font-bold truncate">
+                    {studentData.name}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <Star className="w-3 h-3 text-primary fill-primary" />
+                    <span className="text-xs text-muted-foreground">
+                      {studentData.rank}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* XP Progress - Cleaner */}
+              {/* Level & XP */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Zap className="w-4 h-4 text-primary" />
-                    {t.level} {studentData.level}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">
+                    Level {studentData.level}
                   </span>
-                  <span className="text-muted-foreground font-mono text-xs">
-                    {studentData.xp}/{studentData.nextLevelXP}
+                  <span className="text-xs text-muted-foreground">
+                    {studentData.xp}/{studentData.xpToNext} XP
                   </span>
                 </div>
-                <div className="h-2 bg-background rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all duration-500"
-                    style={{ width: `${xpProgress}%` }}
+                <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${(studentData.xp / studentData.xpToNext) * 100}%`,
+                    }}
+                    transition={{
+                      duration: 1,
+                      ease: "easeOut",
+                    }}
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary via-accent to-secondary rounded-full"
+                    style={{
+                      boxShadow:
+                        "0 0 10px rgba(255, 43, 54, 0.5)",
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Stats - Cleaner cards */}
-              <div className="grid grid-cols-2 gap-2 mt-4">
-                <div className="bg-muted/50 border border-primary/10 rounded-lg p-2.5 text-center">
-                  <Trophy className="w-4 h-4 text-primary mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">
-                    {t.streak}
-                  </p>
-                  <p className="font-bold text-primary">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                <div className="text-center p-2 rounded-lg bg-muted/20">
+                  <div className="text-lg font-bold text-primary">
                     {studentData.streak}
-                  </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Day Streak
+                  </div>
                 </div>
-                <div className="bg-muted/50 border border-secondary/10 rounded-lg p-2.5 text-center">
-                  <TrendingUp className="w-4 h-4 text-secondary mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">
-                    Rank
-                  </p>
-                  <p className="font-bold text-secondary">
-                    #42
-                  </p>
+                <div className="text-center p-2 rounded-lg bg-muted/20">
+                  <div className="text-lg font-bold text-secondary">
+                    {studentData.achievements}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Badges
+                  </div>
+                </div>
+                <div className="text-center p-2 rounded-lg bg-muted/20">
+                  <div className="text-lg font-bold text-accent">
+                    {studentData.courses}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Courses
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 overflow-y-auto">
-              <ul className="space-y-2">
-                {menuItems.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      onClick={() =>
-                        setCurrentPage(item.id as any)
-                      }
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${
-                        currentPage === item.id
-                          ? "bg-primary/10 text-foreground font-medium border-l-2 border-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      <item.icon
-                        className={`w-5 h-5 ${currentPage === item.id ? "text-primary" : ""}`}
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => handleTabChange(item.id)}
+                    onMouseEnter={() =>
+                      soundManager.playHover()
+                    }
+                    whileHover={{ x: 4 }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all btn-press ${
+                      isActive
+                        ? "bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 text-white"
+                        : "hover:bg-muted/20"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">
+                      {language === "en"
+                        ? item.labelEn
+                        : item.labelAr}
+                    </span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTab"
+                        className="ml-auto w-2 h-2 rounded-full bg-primary"
+                        style={{
+                          boxShadow:
+                            "0 0 10px rgba(255, 43, 54, 0.8)",
+                        }}
                       />
-                      <span>{item.label}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+                    )}
+                  </motion.button>
+                );
+              })}
             </nav>
 
-            {/* Logout */}
-            <div className="p-4 border-t border-border">
-              <button
-                onClick={onLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
+            {/* Bottom Actions */}
+            <div className="p-4 border-t border-border space-y-2">
+              <Button
+                variant="ghost"
+                className="w-full justify-start rounded-xl hover:bg-muted/20"
+                onClick={() => soundManager.playClick()}
+                onMouseEnter={() => soundManager.playHover()}
               >
-                <LogOut className="w-5 h-5" />
-                <span>{t.logout}</span>
-              </button>
+                <Settings className="w-5 h-5 mr-3" />
+                {language === "en" ? "Settings" : "الإعدادات"}
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start rounded-xl hover:bg-destructive/20 text-destructive"
+                onClick={handleLogout}
+                onMouseEnter={() => soundManager.playHover()}
+              >
+                <LogOut className="w-5 h-5 mr-3" />
+                {language === "en" ? "Logout" : "تسجيل الخروج"}
+              </Button>
             </div>
-          </motion.aside>
+          </motion.div>
         )}
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar - 72px height */}
-        <header className="h-18 bg-card/80 backdrop-blur-sm border-b border-border flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
-            >
-              {sidebarOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
-
-            {/* Logo + Breadcrumb */}
+      <div className="lg:ml-72 h-full overflow-y-auto custom-scrollbar">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-2xl border-b border-border">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-black">
+                {language === "en"
+                  ? menuItems.find((m) => m.id === activeTab)
+                      ?.labelEn
+                  : menuItems.find((m) => m.id === activeTab)
+                      ?.labelAr}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {language === "en"
+                  ? "Welcome back, hero!"
+                  : "مرحباً بعودتك، بطل!"}
+              </p>
+            </div>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <span className="text-white font-bold text-sm">
-                  U
-                </span>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                / {currentPage}
-              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative rounded-xl hover:bg-muted/20"
+                onClick={() => soundManager.playNotification()}
+              >
+                <Bell className="w-5 h-5" />
+                <div className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse" />
+              </Button>
             </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-4">
-            {/* Level & XP Progress */}
-            <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-muted/50 rounded-lg">
-              <span className="text-sm font-medium">
-                Lvl {studentData.level}
-              </span>
-              <div className="w-28 h-2 bg-background rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-500"
-                  style={{ width: `${xpProgress}%` }}
-                />
-              </div>
-              <span className="text-sm text-muted-foreground font-mono">
-                {studentData.xp} XP
-              </span>
-            </div>
-
-            {/* Notifications */}
-            <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
-              <Bell className="w-5 h-5" />
-              {studentData.notifications > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
-              )}
-            </button>
-
-            {/* Profile Avatar */}
-            <Avatar className="w-10 h-10 border-2 border-primary/30 cursor-pointer hover:border-primary/60 transition-colors">
-              <AvatarImage src="" />
-              <AvatarFallback className="bg-primary/20 text-primary">
-                {user?.fullName?.[0] || "S"}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6 web-background">
+        {/* Dashboard Content */}
+        <div className="max-w-7xl mx-auto p-6">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={currentPage}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {currentPage === "news" && (
-                <NewsFeed language={language} />
-              )}
-              {currentPage === "courses" && (
-                <Courses
-                  language={language}
-                  onXPEarned={(xp) =>
-                    setStudentData((prev) => ({
-                      ...prev,
-                      xp: prev.xp + xp,
-                    }))
-                  }
-                />
-              )}
-              {currentPage === "grades" && (
-                <Grades
-                  language={language}
-                  studentData={studentData}
-                />
-              )}
-              {currentPage === "profile" && (
-                <Profile
-                  language={language}
-                  user={user}
-                  studentData={studentData}
-                />
-              )}
-            </motion.div>
+            {activeTab === "home" && (
+              <motion.div
+                key="home"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-6"
+              >
+                {/* Welcome Banner */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative p-8 rounded-3xl bg-gradient-to-br from-primary via-secondary to-accent overflow-hidden glow-red"
+                >
+                  <div className="absolute inset-0 shimmer opacity-30" />
+                  <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-3xl font-black text-white mb-2">
+                        {language === "en"
+                          ? `Ready to level up, ${studentData.name}?`
+                          : `هل أنت مستعد للارتقاء، ${studentData.name}؟`}
+                      </h3>
+                      <p className="text-white/90">
+                        {language === "en"
+                          ? "You're on a 7-day streak! Keep the momentum going 🔥"
+                          : "لديك سلسلة 7 أيام! حافظ على الزخم 🔥"}
+                      </p>
+                    </div>
+                    <Button
+                      size="lg"
+                      className="bg-white text-primary hover:bg-white/90 rounded-xl px-8 btn-press shadow-lg"
+                      onClick={() => handleTabChange("courses")}
+                      onMouseEnter={() =>
+                        soundManager.playHover()
+                      }
+                    >
+                      <Target className="w-5 h-5 mr-2" />
+                      {language === "en"
+                        ? "Continue Learning"
+                        : "متابعة التعلم"}
+                    </Button>
+                  </div>
+                </motion.div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    {
+                      icon: Trophy,
+                      label: "Total XP",
+                      value: "3,420",
+                      color: "primary",
+                      glow: "glow-red",
+                    },
+                    {
+                      icon: Award,
+                      label: "Achievements",
+                      value: "23",
+                      color: "secondary",
+                      glow: "glow-blue",
+                    },
+                    {
+                      icon: Clock,
+                      label: "Study Time",
+                      value: "42h",
+                      color: "accent",
+                      glow: "glow-cyan",
+                    },
+                    {
+                      icon: TrendingUp,
+                      label: "Avg Score",
+                      value: "87%",
+                      color: "primary",
+                      glow: "glow-gold",
+                    },
+                  ].map((stat, index) => {
+                    const Icon = stat.icon;
+                    return (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        className={`p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border ${stat.glow} game-card cursor-pointer`}
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div
+                            className={`w-12 h-12 rounded-xl bg-${stat.color}/20 flex items-center justify-center`}
+                          >
+                            <Icon
+                              className={`w-6 h-6 text-${stat.color}`}
+                            />
+                          </div>
+                          <Badge
+                            variant="secondary"
+                            className="rounded-lg"
+                          >
+                            +12%
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            {stat.label}
+                          </p>
+                          <p className="text-3xl font-black">
+                            {stat.value}
+                          </p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Recent Activity & Upcoming */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Recent Courses */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
+                  >
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                      {language === "en"
+                        ? "Continue Learning"
+                        : "متابعة التعلم"}
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        {
+                          title: "Web Development Fundamentals",
+                          progress: 65,
+                          color: "primary",
+                        },
+                        {
+                          title: "Data Structures & Algorithms",
+                          progress: 42,
+                          color: "secondary",
+                        },
+                        {
+                          title: "UI/UX Design Principles",
+                          progress: 88,
+                          color: "accent",
+                        },
+                      ].map((course, i) => (
+                        <motion.div
+                          key={i}
+                          whileHover={{ x: 4 }}
+                          className="p-4 rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press"
+                          onClick={() =>
+                            soundManager.playClick()
+                          }
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-sm">
+                              {course.title}
+                            </h4>
+                            <span className="text-xs text-muted-foreground">
+                              {course.progress}%
+                            </span>
+                          </div>
+                          <Progress
+                            value={course.progress}
+                            className="h-2"
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  {/* Achievements Showcase */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
+                  >
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-primary" />
+                      {language === "en"
+                        ? "Recent Achievements"
+                        : "الإنجازات الأخيرة"}
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        {
+                          emoji: "🔥",
+                          label: "Week Warrior",
+                          color: "from-orange-500 to-red-500",
+                        },
+                        {
+                          emoji: "⭐",
+                          label: "Star Student",
+                          color:
+                            "from-yellow-400 to-orange-500",
+                        },
+                        {
+                          emoji: "🎯",
+                          label: "Perfect Score",
+                          color:
+                            "from-green-400 to-emerald-500",
+                        },
+                        {
+                          emoji: "💎",
+                          label: "Elite Learner",
+                          color: "from-cyan-400 to-blue-500",
+                        },
+                        {
+                          emoji: "🚀",
+                          label: "Fast Learner",
+                          color: "from-purple-400 to-pink-500",
+                        },
+                        {
+                          emoji: "🏆",
+                          label: "Champion",
+                          color: "from-amber-400 to-yellow-500",
+                        },
+                      ].map((achievement, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.05 }}
+                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          className={`aspect-square rounded-xl bg-gradient-to-br ${achievement.color} p-3 flex flex-col items-center justify-center cursor-pointer btn-press`}
+                          onClick={() =>
+                            soundManager.playUnlock()
+                          }
+                        >
+                          <div className="text-2xl mb-1">
+                            {achievement.emoji}
+                          </div>
+                          <p className="text-[10px] text-white/90 text-center font-medium">
+                            {achievement.label}
+                          </p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "courses" && (
+              <motion.div
+                key="courses"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <p className="text-center text-muted-foreground py-12">
+                  {language === "en"
+                    ? "Courses content will be here..."
+                    : "محتوى الدورات سيكون هنا..."}
+                </p>
+              </motion.div>
+            )}
+
+            {activeTab === "progress" && (
+              <motion.div
+                key="progress"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <p className="text-center text-muted-foreground py-12">
+                  {language === "en"
+                    ? "Progress tracking will be here..."
+                    : "تتبع التقدم سيكون هنا..."}
+                </p>
+              </motion.div>
+            )}
           </AnimatePresence>
-        </main>
+        </div>
       </div>
 
-      {/* AI Bot Button - Clean Spider Blue */}
+      {/* Floating AI Bot Button */}
       <motion.button
-        onClick={() => setShowAIBot(!showAIBot)}
-        className="fixed bottom-8 right-7 w-16 h-16 bg-secondary rounded-full flex items-center justify-center text-white shadow-lg border-2 border-secondary/30 z-50"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        animate={{
-          scale: [1, 1.03, 1],
-        }}
-        transition={{
-          repeat: Infinity,
-          duration: 2.5,
-          ease: "easeInOut",
-        }}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={handleAIBot}
+        className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-gradient-to-br from-primary via-accent to-secondary flex items-center justify-center shadow-2xl z-50 btn-press"
+        style={{ boxShadow: "0 0 40px rgba(255, 43, 54, 0.6)" }}
       >
-        <MessageCircle className="w-7 h-7" />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          <Zap className="w-8 h-8 text-white" fill="white" />
+        </motion.div>
       </motion.button>
 
-      {/* AI Bot Dialog */}
+      {/* AI Bot Drawer */}
       <AnimatePresence>
         {showAIBot && (
           <AIBot
             onClose={() => setShowAIBot(false)}
             language={language}
-            studentData={studentData}
           />
         )}
       </AnimatePresence>

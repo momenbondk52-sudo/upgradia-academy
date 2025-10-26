@@ -1,425 +1,587 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Home, Users, BookOpen, BarChart3, LogOut, Menu, X, Shield, Check, X as XIcon } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { toast } from 'sonner@2.0.3';
+import { motion } from "motion/react";
+import { useState } from "react";
+import {
+  Shield,
+  Users,
+  Settings,
+  LogOut,
+  BarChart3,
+  Database,
+  Activity,
+  Zap,
+  TrendingUp,
+  UserCheck,
+  BookOpen,
+  Award,
+  Server,
+  Cpu,
+  HardDrive,
+} from "lucide-react";
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
+import { soundManager } from "../utils/soundManager";
 
 interface AdminDashboardProps {
   user: any;
   onLogout: () => void;
-  language: 'en' | 'ar';
+  language: "en" | "ar";
 }
 
-export function AdminDashboard({ user, onLogout, language }: AdminDashboardProps) {
-  const [currentPage, setCurrentPage] = useState<'overview' | 'users' | 'courses' | 'reports'>('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const translations = {
-    en: {
-      dashboard: 'Admin Dashboard',
-      overview: 'Overview',
-      userManagement: 'User Management',
-      courseManagement: 'Course Management',
-      reports: 'AI Reports',
-      logout: 'Logout',
-    },
-    ar: {
-      dashboard: 'لوحة تحكم المسؤول',
-      overview: 'نظرة عامة',
-      userManagement: 'إدارة المستخدمين',
-      courseManagement: 'إدارة المقررات',
-      reports: 'تقارير الذكاء الاصطناعي',
-      logout: 'تسجيل الخروج',
-    },
-  };
-
-  const t = translations[language];
+export function AdminDashboard({
+  user,
+  onLogout,
+  language,
+}: AdminDashboardProps) {
+  const [activeTab, setActiveTab] = useState("overview");
 
   const menuItems = [
-    { id: 'overview', label: t.overview, icon: Home },
-    { id: 'users', label: t.userManagement, icon: Users },
-    { id: 'courses', label: t.courseManagement, icon: BookOpen },
-    { id: 'reports', label: t.reports, icon: BarChart3 },
+    {
+      id: "overview",
+      icon: BarChart3,
+      labelEn: "Overview",
+      labelAr: "نظرة عامة",
+    },
+    {
+      id: "users",
+      icon: Users,
+      labelEn: "Users",
+      labelAr: "المستخدمون",
+    },
+    {
+      id: "analytics",
+      icon: Activity,
+      labelEn: "Analytics",
+      labelAr: "التحليلات",
+    },
+    {
+      id: "system",
+      icon: Database,
+      labelEn: "System",
+      labelAr: "النظام",
+    },
   ];
 
-  return (
-    <div className="fixed inset-0 bg-background flex overflow-hidden">
-      {/* Sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.aside
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            transition={{ type: 'spring', damping: 20 }}
-            className="w-72 bg-card border-r border-border flex flex-col"
-          >
-            <div className="p-6 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded bg-gradient-to-br from-accent to-primary flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="tracking-wider font-extrabold">UPGRADIA</h2>
-                  <p className="text-xs text-accent mt-0.5">{t.dashboard}</p>
-                </div>
-              </div>
-            </div>
+  const handleTabChange = (tabId: string) => {
+    soundManager.playTabSwitch();
+    setActiveTab(tabId);
+  };
 
-            <div className="p-6 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <Avatar className="w-12 h-12 border-2 border-accent/30">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-accent/10 text-accent">
-                    <Shield className="w-6 h-6" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="truncate font-medium">Admin</p>
-                  <p className="text-sm text-muted-foreground">System Administrator</p>
-                </div>
-              </div>
-            </div>
-
-            <nav className="flex-1 p-4 overflow-y-auto">
-              <ul className="space-y-2">
-                {menuItems.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => setCurrentPage(item.id as any)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${
-                        currentPage === item.id
-                          ? 'bg-accent/10 text-foreground font-medium border-l-2 border-accent'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                      }`}
-                    >
-                      <item.icon className={`w-5 h-5 ${currentPage === item.id ? 'text-accent' : ''}`} />
-                      <span>{item.label}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            <div className="p-4 border-t border-border">
-              <button
-                onClick={onLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>{t.logout}</span>
-              </button>
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
-          >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-6 web-background">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentPage}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {currentPage === 'overview' && <AdminOverview language={language} />}
-              {currentPage === 'users' && <UserManagement language={language} />}
-              {currentPage === 'courses' && <CourseManagement language={language} />}
-              {currentPage === 'reports' && <AIReports language={language} />}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function AdminOverview({ language }: { language: 'en' | 'ar' }) {
-  const t = {
-    en: {
-      title: 'Overview',
-      totalStudents: 'Total Students',
-      totalInstructors: 'Total Instructors',
-      activeCourses: 'Active Courses',
-      avgEngagement: 'Avg Engagement',
-      pendingApprovals: 'Pending Approvals',
-    },
-    ar: {
-      title: 'نظرة عامة',
-      totalStudents: 'إجمالي الطلاب',
-      totalInstructors: 'إجمالي المدرسين',
-      activeCourses: 'المقررات النشطة',
-      avgEngagement: 'متوسط التفاعل',
-      pendingApprovals: 'الموافقات المعلقة',
-    },
-  }[language];
+  const handleLogout = () => {
+    soundManager.playClick();
+    onLogout();
+  };
 
   return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: t.totalStudents, value: '1,245', icon: Users, color: 'primary' },
-          { label: t.totalInstructors, value: '48', icon: Users, color: 'secondary' },
-          { label: t.activeCourses, value: '32', icon: BookOpen, color: 'accent' },
-          { label: t.avgEngagement, value: '82%', icon: BarChart3, color: 'primary' },
-        ].map((stat, index) => (
+    <div className="fixed inset-0 game-background overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 web-pattern opacity-10" />
+
+      {/* Floating Grid Effect */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(20)].map((_, i) => (
           <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div
-                  className={`w-12 h-12 rounded-lg mb-4 flex items-center justify-center ${
-                    stat.color === 'primary'
-                      ? 'bg-primary/20 text-primary'
-                      : stat.color === 'secondary'
-                      ? 'bg-secondary/20 text-secondary'
-                      : 'bg-accent/20 text-accent'
-                  }`}
-                >
-                  <stat.icon className="w-6 h-6" />
-                </div>
-                <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                <p className="text-2xl font-bold">{stat.value}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-accent/40"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              opacity: [0.2, 0.8, 0.2],
+              scale: [1, 1.5, 1],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
+          />
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Badge className="bg-primary/20 text-primary border-primary">3</Badge>
-            {t.pendingApprovals}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            You have pending user registrations that require approval
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 bottom-0 w-72 bg-card/80 backdrop-blur-2xl border-r border-border flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center glow-cyan">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="font-black gradient-text">
+                UPGRADIA
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Admin Control
+              </p>
+            </div>
+          </div>
+        </div>
 
-function UserManagement({ language }: { language: 'en' | 'ar' }) {
-  const [pendingUsers, setPendingUsers] = useState([
-    {
-      id: 1,
-      name: 'Ahmed Hassan',
-      email: 'ahmed@example.com',
-      role: 'student',
-      nationalId: '12345678901234',
-      submittedAt: '2025-10-20',
-    },
-    {
-      id: 2,
-      name: 'Sara Mohamed',
-      email: 'sara@example.com',
-      role: 'professor',
-      nationalId: '98765432109876',
-      submittedAt: '2025-10-21',
-    },
-  ]);
+        {/* User Info */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-3">
+            <Avatar className="w-12 h-12 border-2 border-accent/50 glow-cyan">
+              <AvatarFallback>AD</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-bold">
+                {user?.name || "Administrator"}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                System Admin
+              </p>
+            </div>
+          </div>
+        </div>
 
-  const t = {
-    en: {
-      title: 'User Management',
-      pendingRegistrations: 'Pending Registrations',
-      name: 'Name',
-      email: 'Email',
-      role: 'Role',
-      approve: 'Approve',
-      reject: 'Reject',
-      student: 'Student',
-      professor: 'Professor',
-    },
-    ar: {
-      title: 'إدارة المستخدمين',
-      pendingRegistrations: 'التسجيلات المعلقة',
-      name: 'الاسم',
-      email: 'البريد الإلكتروني',
-      role: 'الدور',
-      approve: 'موافقة',
-      reject: 'رفض',
-      student: 'طالب',
-      professor: 'أستاذ',
-    },
-  }[language];
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <motion.button
+                key={item.id}
+                onClick={() => handleTabChange(item.id)}
+                onMouseEnter={() => soundManager.playHover()}
+                whileHover={{ x: 4 }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all btn-press ${
+                  isActive
+                    ? "bg-gradient-to-r from-accent/20 to-purple-500/20 border border-accent/30 text-white"
+                    : "hover:bg-muted/20"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="font-medium">
+                  {language === "en"
+                    ? item.labelEn
+                    : item.labelAr}
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="adminActiveTab"
+                    className="ml-auto w-2 h-2 rounded-full bg-accent"
+                    style={{
+                      boxShadow:
+                        "0 0 10px rgba(0, 217, 255, 0.8)",
+                    }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </nav>
 
-  const handleApprove = (userId: number) => {
-    setPendingUsers(prev => prev.filter(u => u.id !== userId));
-    toast.success('User approved successfully!');
-  };
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-border space-y-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start rounded-xl hover:bg-muted/20"
+            onClick={() => soundManager.playClick()}
+            onMouseEnter={() => soundManager.playHover()}
+          >
+            <Settings className="w-5 h-5 mr-3" />
+            {language === "en" ? "Settings" : "الإعدادات"}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start rounded-xl hover:bg-destructive/20 text-destructive"
+            onClick={handleLogout}
+            onMouseEnter={() => soundManager.playHover()}
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            {language === "en" ? "Logout" : "تسجيل الخروج"}
+          </Button>
+        </div>
+      </div>
 
-  const handleReject = (userId: number) => {
-    setPendingUsers(prev => prev.filter(u => u.id !== userId));
-    toast.error('User registration rejected');
-  };
-
-  return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.pendingRegistrations}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {pendingUsers.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No pending registrations
+      {/* Main Content */}
+      <div className="ml-72 h-full overflow-y-auto custom-scrollbar">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-2xl border-b border-border">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <h2 className="text-2xl font-black">
+              {
+                menuItems.find((m) => m.id === activeTab)
+                  ?.labelEn
+              }
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {language === "en"
+                ? "System-wide control and monitoring"
+                : "التحكم والمراقبة على مستوى النظام"}
             </p>
-          ) : (
-            pendingUsers.map((user, index) => (
+          </div>
+        </div>
+
+        {/* Dashboard Content */}
+        <div className="max-w-7xl mx-auto p-6">
+          {activeTab === "overview" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* System Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  {
+                    icon: Users,
+                    label: "Total Users",
+                    value: "1,247",
+                    change: "+52",
+                    color: "primary",
+                    glow: "glow-red",
+                  },
+                  {
+                    icon: BookOpen,
+                    label: "Active Courses",
+                    value: "84",
+                    change: "+12",
+                    color: "secondary",
+                    glow: "glow-blue",
+                  },
+                  {
+                    icon: Activity,
+                    label: "System Health",
+                    value: "99.8%",
+                    change: "+0.2%",
+                    color: "accent",
+                    glow: "glow-cyan",
+                  },
+                  {
+                    icon: Award,
+                    label: "Achievements",
+                    value: "3.2k",
+                    change: "+180",
+                    color: "primary",
+                    glow: "glow-gold",
+                  },
+                ].map((stat, index) => {
+                  const Icon = stat.icon;
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ y: -4, scale: 1.02 }}
+                      className={`p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border ${stat.glow} game-card cursor-pointer relative overflow-hidden`}
+                    >
+                      {/* Scanline Effect */}
+                      <div className="absolute inset-0 scanline opacity-30" />
+
+                      <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-4">
+                          <div
+                            className={`w-12 h-12 rounded-xl bg-${stat.color}/20 flex items-center justify-center`}
+                          >
+                            <Icon
+                              className={`w-6 h-6 text-${stat.color}`}
+                            />
+                          </div>
+                          <Badge
+                            variant="secondary"
+                            className="rounded-lg bg-green-500/20 text-green-400 border-green-500/30"
+                          >
+                            {stat.change}
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            {stat.label}
+                          </p>
+                          <p className="text-3xl font-black">
+                            {stat.value}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* System Performance & User Distribution */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* System Performance */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border glow-cyan"
+                >
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <Server className="w-5 h-5 text-accent" />
+                    {language === "en"
+                      ? "System Performance"
+                      : "أداء النظام"}
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      {
+                        icon: Cpu,
+                        label: "CPU Usage",
+                        value: 42,
+                        max: 100,
+                        unit: "%",
+                        color: "from-primary to-secondary",
+                      },
+                      {
+                        icon: HardDrive,
+                        label: "Memory",
+                        value: 6.8,
+                        max: 16,
+                        unit: "GB",
+                        color: "from-secondary to-accent",
+                      },
+                      {
+                        icon: Database,
+                        label: "Storage",
+                        value: 124,
+                        max: 500,
+                        unit: "GB",
+                        color: "from-accent to-purple-500",
+                      },
+                      {
+                        icon: Activity,
+                        label: "Network",
+                        value: 18,
+                        max: 100,
+                        unit: "Mbps",
+                        color: "from-purple-500 to-primary",
+                      },
+                    ].map((metric, i) => {
+                      const Icon = metric.icon;
+                      return (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">
+                                {metric.label}
+                              </span>
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              {metric.value}
+                              {metric.unit} / {metric.max}
+                              {metric.unit}
+                            </span>
+                          </div>
+                          <div className="relative h-2 bg-muted/30 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{
+                                width: `${(metric.value / metric.max) * 100}%`,
+                              }}
+                              transition={{
+                                duration: 1,
+                                delay: i * 0.1,
+                              }}
+                              className={`h-full bg-gradient-to-r ${metric.color} rounded-full`}
+                            />
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+
+                {/* User Distribution */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
+                >
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-secondary" />
+                    {language === "en"
+                      ? "User Distribution"
+                      : "توزيع المستخدمين"}
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      {
+                        role: "Students",
+                        count: 1089,
+                        percentage: 87,
+                        color: "primary",
+                      },
+                      {
+                        role: "Professors",
+                        count: 124,
+                        percentage: 10,
+                        color: "secondary",
+                      },
+                      {
+                        role: "TAs",
+                        count: 28,
+                        percentage: 2,
+                        color: "accent",
+                      },
+                      {
+                        role: "Admins",
+                        count: 6,
+                        percentage: 1,
+                        color: "purple-500",
+                      },
+                    ].map((userType, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="flex items-center gap-4"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium">
+                              {userType.role}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {userType.count}
+                            </span>
+                          </div>
+                          <div className="relative h-2 bg-muted/30 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{
+                                width: `${userType.percentage}%`,
+                              }}
+                              transition={{
+                                duration: 1,
+                                delay: i * 0.1,
+                              }}
+                              className={`h-full bg-${userType.color} rounded-full`}
+                            />
+                          </div>
+                        </div>
+                        <div
+                          className={`text-lg font-black text-${userType.color}`}
+                        >
+                          {userType.percentage}%
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Activity Log */}
               <motion.div
-                key={user.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
               >
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-12 h-12">
-                    <AvatarFallback>{user.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4>{user.name}</h4>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                    <Badge className="mt-1 bg-accent/20 text-accent border-accent">
-                      {user.role === 'student' ? t.student : t.professor}
-                    </Badge>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleApprove(user.id)}
-                    className="bg-accent hover:bg-accent/90"
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    {t.approve}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleReject(user.id)}
-                    className="text-destructive hover:bg-destructive/10"
-                  >
-                    <XIcon className="w-4 h-4 mr-1" />
-                    {t.reject}
-                  </Button>
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-accent" />
+                  {language === "en"
+                    ? "System Activity Log"
+                    : "سجل نشاط النظام"}
+                </h3>
+                <div className="space-y-2">
+                  {[
+                    {
+                      time: "2m ago",
+                      event:
+                        "New course created: Advanced React Patterns",
+                      type: "success",
+                    },
+                    {
+                      time: "15m ago",
+                      event: "52 students logged in",
+                      type: "info",
+                    },
+                    {
+                      time: "1h ago",
+                      event: "Database backup completed",
+                      type: "success",
+                    },
+                    {
+                      time: "2h ago",
+                      event: "System update installed",
+                      type: "warning",
+                    },
+                    {
+                      time: "3h ago",
+                      event: "12 new user registrations",
+                      type: "info",
+                    },
+                  ].map((log, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 hover:bg-muted/30 transition-all"
+                    >
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          log.type === "success"
+                            ? "bg-green-400"
+                            : log.type === "warning"
+                              ? "bg-yellow-400"
+                              : "bg-blue-400"
+                        }`}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm">{log.event}</p>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {log.time}
+                      </span>
+                    </motion.div>
+                  ))}
                 </div>
               </motion.div>
-            ))
+            </motion.div>
           )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 
-function CourseManagement({ language }: { language: 'en' | 'ar' }) {
-  const t = {
-    en: {
-      title: 'Course Management',
-      description: 'Add, edit, or archive courses',
-    },
-    ar: {
-      title: 'إدارة المقررات',
-      description: 'إضافة أو تعديل أو أرشفة المقررات',
-    },
-  }[language];
-
-  return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
-      <p className="text-muted-foreground">{t.description}</p>
-      
-      <Card>
-        <CardContent className="p-12 text-center">
-          <BookOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Course management interface</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function AIReports({ language }: { language: 'en' | 'ar' }) {
-  const t = {
-    en: {
-      title: 'AI-Generated Reports',
-      description: 'Insights and analytics powered by AI',
-      weeklyEngagement: 'Weekly Engagement Trend',
-      topPerformers: 'Top Performing Students',
-      recommendations: 'AI Recommendations',
-    },
-    ar: {
-      title: 'التقارير المولدة بالذكاء الاصطناعي',
-      description: 'رؤى وتحليلات مدعومة بالذكاء الاصطناعي',
-      weeklyEngagement: 'اتجاه التفاعل الأسبوعي',
-      topPerformers: 'أفضل الطلاب أداءً',
-      recommendations: 'توصيات الذكاء الاصطناعي',
-    },
-  }[language];
-
-  return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
-      <p className="text-muted-foreground">{t.description}</p>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.weeklyEngagement}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-48 flex items-center justify-center text-muted-foreground">
-              <BarChart3 className="w-16 h-16 opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.recommendations}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="p-3 bg-accent/10 border-l-4 border-accent rounded">
-              <p className="text-sm">🎯 15% of students show low engagement - consider motivational initiatives</p>
-            </div>
-            <div className="p-3 bg-secondary/10 border-l-4 border-secondary rounded">
-              <p className="text-sm">📚 "Database Systems" has highest dropout rate - review course difficulty</p>
-            </div>
-            <div className="p-3 bg-primary/10 border-l-4 border-primary rounded">
-              <p className="text-sm">⚡ XP distribution is healthy across all student levels</p>
-            </div>
-          </CardContent>
-        </Card>
+          {activeTab === "users" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-center text-muted-foreground py-12">
+                {language === "en"
+                  ? "User management will be here..."
+                  : "إدارة المستخدمين ستكون هنا..."}
+              </p>
+            </motion.div>
+          )}
+        </div>
       </div>
+
+      {/* Floating System Status Indicator */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="fixed bottom-8 right-8 flex items-center gap-2 px-4 py-3 rounded-2xl bg-card/90 backdrop-blur-2xl border border-accent/30 glow-cyan shadow-2xl"
+      >
+        <motion.div
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="w-3 h-3 rounded-full bg-green-400"
+          style={{
+            boxShadow: "0 0 10px rgba(74, 222, 128, 0.8)",
+          }}
+        />
+        <div>
+          <p className="text-xs text-muted-foreground">
+            System Status
+          </p>
+          <p className="text-sm font-bold text-green-400">
+            All Systems Operational
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }

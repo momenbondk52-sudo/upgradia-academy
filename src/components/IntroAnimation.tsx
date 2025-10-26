@@ -1,5 +1,7 @@
 import { motion } from "motion/react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Zap, Globe, Brain, Users } from "lucide-react";
+import { soundManager } from "../utils/soundManager";
 
 interface IntroAnimationProps {
   onComplete: () => void;
@@ -8,196 +10,208 @@ interface IntroAnimationProps {
 export function IntroAnimation({
   onComplete,
 }: IntroAnimationProps) {
-  const [typingComplete, setTypingComplete] = useState(false);
-  const text = "Initializing Upgradia Academy_";
+  const [stage, setStage] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setTypingComplete(true);
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, []);
+    soundManager.playTransition();
+
+    const timer1 = setTimeout(() => {
+      setStage(1);
+      soundManager.playNotification();
+    }, 1500);
+
+    const timer2 = setTimeout(() => {
+      setStage(2);
+      soundManager.playXPGain();
+    }, 3000);
+
+    const timer3 = setTimeout(() => {
+      setStage(3);
+      soundManager.playSuccess();
+    }, 4500);
+
+    const timer4 = setTimeout(() => {
+      soundManager.playTransition();
+      onComplete();
+    }, 6000);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
+    };
+  }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center web-background overflow-hidden">
-      {/* Clean Geometric Web Pattern */}
-      <svg
-        className="absolute inset-0 w-full h-full opacity-10"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient
-            id="webGradient"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            <stop
-              offset="0%"
-              stopColor="#E31B23"
-              stopOpacity="0.2"
-            />
-            <stop
-              offset="50%"
-              stopColor="#0B57A4"
-              stopOpacity="0.2"
-            />
-            <stop
-              offset="100%"
-              stopColor="#007ACC"
-              stopOpacity="0.2"
-            />
-          </linearGradient>
-        </defs>
-        {/* Clean concentric circles */}
-        {[150, 250, 350].map((r, i) => (
-          <motion.circle
-            key={r}
-            cx="50%"
-            cy="50%"
-            r={r}
-            fill="none"
-            stroke="url(#webGradient)"
-            strokeWidth="0.5"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.3 }}
-            transition={{ delay: i * 0.15, duration: 0.8 }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center game-background overflow-hidden"
+    >
+      {/* Animated Background Pattern */}
+      <div className="absolute inset-0 web-pattern opacity-30" />
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 rounded-full"
+            style={{
+              background:
+                i % 3 === 0
+                  ? "#ff2b36"
+                  : i % 3 === 1
+                    ? "#1e7dd6"
+                    : "#00d9ff",
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              x: [0, Math.random() * 20 - 10, 0],
+              opacity: [0, 1, 0],
+            }}
+            transition={{
+              duration: 3 + Math.random() * 2,
+              repeat: Infinity,
+              delay: Math.random() * 2,
+            }}
           />
         ))}
-        {/* Radial lines - cleaner */}
-        {[0, 60, 120, 180, 240, 300].map((angle, i) => {
-          const x1 = 50;
-          const y1 = 50;
-          const x2 =
-            50 + 35 * Math.cos((angle * Math.PI) / 180);
-          const y2 =
-            50 + 35 * Math.sin((angle * Math.PI) / 180);
-          return (
-            <motion.line
-              key={angle}
-              x1={`${x1}%`}
-              y1={`${y1}%`}
-              x2={`${x2}%`}
-              y2={`${y2}%`}
-              stroke="url(#webGradient)"
-              strokeWidth="0.5"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.3 }}
-              transition={{
-                delay: 0.6 + i * 0.08,
-                duration: 0.6,
-              }}
-            />
-          );
-        })}
-      </svg>
+      </div>
 
-      {/* Logo Drawing Animation */}
+      {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center gap-8">
+        {/* Logo/Icon */}
         <motion.div
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 20,
+            duration: 0.8,
+          }}
           className="relative"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
         >
-          {/* Logo - Upgradia Text with Neon Effect */}
-          <motion.div
-            className="relative"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1, ease: "backOut" }}
-          >
-            <svg
-              width="400"
-              height="120"
-              viewBox="0 0 400 120"
-              className="drop-shadow-2xl"
-            >
-              <defs>
-                <linearGradient
-                  id="logoGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="0%"
-                >
-                  <stop offset="0%" stopColor="#E31B23" />
-                  <stop offset="100%" stopColor="#0B57A4" />
-                </linearGradient>
-              </defs>
-              <motion.text
-                x="200"
-                y="70"
-                textAnchor="middle"
-                fill="url(#logoGradient)"
-                style={{
-                  fontFamily: "Montserrat",
-                  fontSize: "52px",
-                  fontWeight: 800,
-                  letterSpacing: "0.05em",
-                }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.2, ease: "easeOut" }}
-              >
-                UPGRADIA
-              </motion.text>
-            </svg>
-          </motion.div>
-        </motion.div>
-
-        {/* Typing Text Animation */}
-        <motion.div
-          className="relative h-12 flex items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-        >
-          <div className="relative overflow-hidden">
-            <motion.p
-              className="text-accent whitespace-nowrap tracking-wider"
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              transition={{
-                delay: 1.5,
-                duration: 1,
-                ease: "steps(30)",
-              }}
-            >
-              {text}
-            </motion.p>
+          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-1 glow-red animate-glow-pulse">
+            <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
+              <Zap
+                className="w-16 h-16 text-primary"
+                strokeWidth={2.5}
+              />
+            </div>
           </div>
+
+          {/* Orbiting Icons */}
+          {stage >= 1 && (
+            <>
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1, rotate: 360 }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center glow-blue"
+              >
+                <Globe className="w-5 h-5 text-white" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1, rotate: -360 }}
+                transition={{
+                  duration: 15,
+                  repeat: Infinity,
+                  ease: "linear",
+                  delay: 0.5,
+                }}
+                className="absolute -bottom-2 -left-2 w-10 h-10 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center glow-cyan"
+              >
+                <Brain className="w-5 h-5 text-white" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1, rotate: 360 }}
+                transition={{
+                  duration: 18,
+                  repeat: Infinity,
+                  ease: "linear",
+                  delay: 1,
+                }}
+                className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center"
+                style={{
+                  boxShadow: "0 0 20px rgba(255, 215, 0, 0.5)",
+                }}
+              >
+                <Users className="w-5 h-5 text-white" />
+              </motion.div>
+            </>
+          )}
         </motion.div>
 
-        {/* Initialize Button */}
-        {typingComplete && (
-          <motion.button
-            onClick={onComplete}
-            className="px-12 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg border border-primary/30 transition-all relative overflow-hidden group"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 300 }}
+        {/* Title */}
+        {stage >= 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
           >
-            <span className="relative z-10 font-semibold tracking-wide">
-              INITIALIZE
-            </span>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-2 gradient-text">
+              UPGRADIA
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground font-medium">
+              Academy
+            </p>
+          </motion.div>
+        )}
 
-            {/* Clean shine effect */}
+        {/* Tagline */}
+        {stage >= 2 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="px-8 py-4 rounded-2xl bg-card/50 backdrop-blur-xl border-2 border-primary/30 glow-red"
+          >
+            <p className="text-lg md:text-xl text-center">
+              <span className="text-glow-red">Learn.</span>{" "}
+              <span className="text-glow-blue">Level Up.</span>{" "}
+              <span className="text-glow-cyan">
+                Unlock Your Potential.
+              </span>
+            </p>
+          </motion.div>
+        )}
+
+        {/* Loading Bar */}
+        {stage >= 3 && (
+          <motion.div
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 300 }}
+            className="h-2 bg-muted/30 rounded-full overflow-hidden"
+          >
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{
-                repeat: Infinity,
-                duration: 2.5,
-                ease: "linear",
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+              className="h-full bg-gradient-to-r from-primary via-accent to-secondary rounded-full"
+              style={{
+                boxShadow: "0 0 20px rgba(255, 43, 54, 0.6)",
               }}
             />
-          </motion.button>
+          </motion.div>
         )}
       </div>
-    </div>
+
+      {/* Corner Accents */}
+      <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-primary/20 to-transparent rounded-br-full blur-2xl" />
+      <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-tl from-secondary/20 to-transparent rounded-tl-full blur-2xl" />
+    </motion.div>
   );
 }

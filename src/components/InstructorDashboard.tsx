@@ -1,39 +1,24 @@
+import { motion } from "motion/react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import {
-  Home,
-  BookOpen,
-  Upload,
-  GraduationCap,
-  LogOut,
-  Menu,
-  X,
   BarChart3,
-  FileText,
-  Video,
+  Users,
+  BookOpen,
+  MessageSquare,
+  Settings,
+  LogOut,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Award,
+  Zap,
 } from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "./ui/avatar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
 import { Button } from "./ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "./ui/tabs";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { toast } from "sonner@2.0.3";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
+import { soundManager } from "../utils/soundManager";
 
 interface InstructorDashboardProps {
   user: any;
@@ -46,528 +31,482 @@ export function InstructorDashboard({
   onLogout,
   language,
 }: InstructorDashboardProps) {
-  const [currentPage, setCurrentPage] = useState<
-    "overview" | "courses" | "upload" | "grades"
-  >("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const translations = {
-    en: {
-      dashboard: "Instructor Dashboard",
-      overview: "Overview",
-      courses: "My Courses",
-      uploadContent: "Upload Content",
-      grades: "Grades",
-      logout: "Logout",
-      welcome: "Welcome back",
-    },
-    ar: {
-      dashboard: "لوحة تحكم المدرس",
-      overview: "نظرة عامة",
-      courses: "مقرراتي",
-      uploadContent: "رفع المحتوى",
-      grades: "الدرجات",
-      logout: "تسجيل الخروج",
-      welcome: "مرحباً بعودتك",
-    },
-  };
-
-  const t = translations[language];
+  const [activeTab, setActiveTab] = useState("overview");
 
   const menuItems = [
-    { id: "overview", label: t.overview, icon: Home },
-    { id: "courses", label: t.courses, icon: BookOpen },
-    { id: "upload", label: t.uploadContent, icon: Upload },
-    { id: "grades", label: t.grades, icon: GraduationCap },
-  ];
-
-  return (
-    <div className="fixed inset-0 bg-background flex overflow-hidden">
-      {/* Sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.aside
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            transition={{ type: "spring", damping: 20 }}
-            className="w-72 bg-card border-r border-border flex flex-col"
-          >
-            <div className="p-6 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
-                  <span className="text-white font-bold">
-                    U
-                  </span>
-                </div>
-                <div>
-                  <h2 className="tracking-wider font-extrabold">
-                    UPGRADIA
-                  </h2>
-                  <p className="text-xs text-secondary mt-0.5">
-                    {t.dashboard}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 border-b border-border/50">
-              <div className="flex items-center gap-3">
-                <Avatar className="w-12 h-12 border-2 border-secondary/30">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-secondary/10 text-secondary font-semibold">
-                    {user?.fullName?.[0] || "I"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="truncate font-medium">
-                    {user?.fullName || "Instructor Name"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {user?.role === "professor"
-                      ? "Professor"
-                      : "Teaching Assistant"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <nav className="flex-1 p-4 overflow-y-auto">
-              <ul className="space-y-2">
-                {menuItems.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      onClick={() =>
-                        setCurrentPage(item.id as any)
-                      }
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative ${
-                        currentPage === item.id
-                          ? "bg-secondary/10 text-foreground font-medium border-l-2 border-secondary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      <item.icon
-                        className={`w-5 h-5 ${currentPage === item.id ? "text-secondary" : ""}`}
-                      />
-                      <span>{item.label}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            <div className="p-4 border-t border-border">
-              <button
-                onClick={onLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>{t.logout}</span>
-              </button>
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
-          >
-            {sidebarOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </button>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-6 web-background">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentPage}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {currentPage === "overview" && (
-                <InstructorOverview language={language} />
-              )}
-              {currentPage === "courses" && (
-                <InstructorCourses language={language} />
-              )}
-              {currentPage === "upload" && (
-                <UploadContent language={language} />
-              )}
-              {currentPage === "grades" && (
-                <ManageGrades language={language} />
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function InstructorOverview({
-  language,
-}: {
-  language: "en" | "ar";
-}) {
-  const t = {
-    en: {
-      title: "Overview",
-      totalStudents: "Total Students",
-      activeCourses: "Active Courses",
-      avgEngagement: "Avg Engagement",
-      contentUploaded: "Content Uploaded",
-    },
-    ar: {
-      title: "نظرة عامة",
-      totalStudents: "إجمالي الطلاب",
-      activeCourses: "المقررات النشطة",
-      avgEngagement: "متوسط التفاعل",
-      contentUploaded: "المحتوى المرفوع",
-    },
-  }[language];
-
-  return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          {
-            label: t.totalStudents,
-            value: "245",
-            icon: GraduationCap,
-            color: "primary",
-          },
-          {
-            label: t.activeCourses,
-            value: "4",
-            icon: BookOpen,
-            color: "secondary",
-          },
-          {
-            label: t.avgEngagement,
-            value: "78%",
-            icon: BarChart3,
-            color: "accent",
-          },
-          {
-            label: t.contentUploaded,
-            value: "156",
-            icon: FileText,
-            color: "primary",
-          },
-        ].map((stat, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card>
-              <CardContent className="p-6">
-                <div
-                  className={`w-12 h-12 rounded-lg mb-4 flex items-center justify-center ${
-                    stat.color === "primary"
-                      ? "bg-primary/20 text-primary"
-                      : stat.color === "secondary"
-                        ? "bg-secondary/20 text-secondary"
-                        : "bg-accent/20 text-accent"
-                  }`}
-                >
-                  <stat.icon className="w-6 h-6" />
-                </div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  {stat.label}
-                </p>
-                <p className="text-2xl font-bold">
-                  {stat.value}
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function InstructorCourses({
-  language,
-}: {
-  language: "en" | "ar";
-}) {
-  const t = {
-    en: {
-      title: "My Courses",
-      students: "Students",
-      progress: "Avg Progress",
-    },
-    ar: {
-      title: "مقرراتي",
-      students: "الطلاب",
-      progress: "متوسط التقدم",
-    },
-  }[language];
-
-  const courses = [
     {
-      name: "Data Structures & Algorithms",
-      students: 85,
-      progress: 65,
+      id: "overview",
+      icon: BarChart3,
+      labelEn: "Overview",
+      labelAr: "نظرة عامة",
     },
-    { name: "Database Systems", students: 72, progress: 58 },
-    { name: "Web Development", students: 68, progress: 72 },
     {
-      name: "Artificial Intelligence",
-      students: 20,
-      progress: 15,
+      id: "students",
+      icon: Users,
+      labelEn: "Students",
+      labelAr: "الطلاب",
+    },
+    {
+      id: "courses",
+      icon: BookOpen,
+      labelEn: "Courses",
+      labelAr: "الدورات",
+    },
+    {
+      id: "messages",
+      icon: MessageSquare,
+      labelEn: "Messages",
+      labelAr: "الرسائل",
     },
   ];
 
-  return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
+  const handleTabChange = (tabId: string) => {
+    soundManager.playTabSwitch();
+    setActiveTab(tabId);
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {courses.map((course, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card className="hover:border-secondary transition-all cursor-pointer">
-              <CardHeader>
-                <CardTitle>{course.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {t.students}
-                  </span>
-                  <span className="font-bold">
-                    {course.students}
-                  </span>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">
-                      {t.progress}
-                    </span>
-                    <span className="text-accent">
-                      {course.progress}%
-                    </span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-secondary to-accent transition-all"
-                      style={{ width: `${course.progress}%` }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function UploadContent({
-  language,
-}: {
-  language: "en" | "ar";
-}) {
-  const [uploadType, setUploadType] = useState<"video" | "pdf">(
-    "video",
-  );
-  const [questions, setQuestions] = useState<any[]>([]);
-
-  const t = {
-    en: {
-      title: "Upload Content",
-      video: "Video",
-      pdf: "PDF",
-      courseTitle: "Course Title",
-      contentTitle: "Content Title",
-      selectCourse: "Select Course",
-      file: "Upload File",
-      addQuestion: "Add Question",
-      timestamp: "Timestamp (seconds)",
-      question: "Question",
-      questionType: "Question Type",
-      mcq: "Multiple Choice",
-      trueFalse: "True/False",
-      options: "Options (one per line)",
-      correctAnswer: "Correct Answer",
-      xpReward: "XP Reward",
-      upload: "Upload",
-    },
-    ar: {
-      title: "رفع المحتوى",
-      video: "فيديو",
-      pdf: "PDF",
-      courseTitle: "عنوان المقرر",
-      contentTitle: "عنوان المحتوى",
-      selectCourse: "اختر المقرر",
-      file: "رفع ملف",
-      addQuestion: "إضافة سؤال",
-      timestamp: "الوقت (بالثواني)",
-      question: "السؤال",
-      questionType: "نوع السؤال",
-      mcq: "اختيار متعدد",
-      trueFalse: "صح/خطأ",
-      options: "الخيارات (واحد في كل سطر)",
-      correctAnswer: "الإجابة الصحيحة",
-      xpReward: "مكافأة النقاط",
-      upload: "رفع",
-    },
-  }[language];
-
-  const handleUpload = () => {
-    toast.success("Content uploaded successfully!");
+  const handleLogout = () => {
+    soundManager.playClick();
+    onLogout();
   };
 
   return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
+    <div className="fixed inset-0 game-background overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 hex-pattern opacity-10" />
 
-      <Tabs
-        value={uploadType}
-        onValueChange={(v) => setUploadType(v as any)}
-      >
-        <TabsList>
-          <TabsTrigger value="video">
-            <Video className="w-4 h-4 mr-2" />
-            {t.video}
-          </TabsTrigger>
-          <TabsTrigger value="pdf">
-            <FileText className="w-4 h-4 mr-2" />
-            {t.pdf}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="video" className="mt-6">
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>{t.selectCourse}</Label>
-                <Input placeholder={t.selectCourse} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.contentTitle}</Label>
-                <Input placeholder={t.contentTitle} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.file}</Label>
-                <Input type="file" accept="video/*" />
-              </div>
-
-              <div className="border-t pt-4 mt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h4>Interactive Questions</h4>
-                  <Button variant="outline" size="sm">
-                    {t.addQuestion}
-                  </Button>
-                </div>
-
-                <div className="text-sm text-muted-foreground text-center py-8">
-                  Add questions that will appear at specific
-                  timestamps during video playback
-                </div>
-              </div>
-
-              <Button
-                onClick={handleUpload}
-                className="w-full bg-secondary hover:bg-secondary/90"
-              >
-                {t.upload}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="pdf" className="mt-6">
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>{t.selectCourse}</Label>
-                <Input placeholder={t.selectCourse} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.contentTitle}</Label>
-                <Input placeholder={t.contentTitle} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.file}</Label>
-                <Input type="file" accept=".pdf" />
-              </div>
-
-              <Button
-                onClick={handleUpload}
-                className="w-full bg-secondary hover:bg-secondary/90"
-              >
-                {t.upload}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
-
-function ManageGrades({ language }: { language: "en" | "ar" }) {
-  const t = {
-    en: {
-      title: "Manage Grades",
-      selectCourse: "Select Course",
-      studentName: "Student Name",
-      xpEarned: "XP Earned",
-      grade: "Grade",
-      save: "Save Grades",
-    },
-    ar: {
-      title: "إدارة الدرجات",
-      selectCourse: "اختر المقرر",
-      studentName: "اسم الطالب",
-      xpEarned: "النقاط المكتسبة",
-      grade: "الدرجة",
-      save: "حفظ الدرجات",
-    },
-  }[language];
-
-  return (
-    <div className="space-y-6">
-      <h1>{t.title}</h1>
-
-      <Card>
-        <CardHeader>
-          <div className="space-y-2">
-            <Label>{t.selectCourse}</Label>
-            <Input placeholder={t.selectCourse} />
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 bottom-0 w-72 bg-card/80 backdrop-blur-2xl border-r border-border flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary to-accent flex items-center justify-center glow-blue">
+              <Zap className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="font-black gradient-text">
+                UPGRADIA
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Instructor Portal
+              </p>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground text-center py-8">
-            Select a course to view and manage student grades
+        </div>
+
+        {/* User Info */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-3">
+            <Avatar className="w-12 h-12 border-2 border-secondary/50 glow-blue">
+              <AvatarFallback>IN</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-bold">
+                Dr. {user?.name || "Instructor"}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Professor
+              </p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto custom-scrollbar">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <motion.button
+                key={item.id}
+                onClick={() => handleTabChange(item.id)}
+                onMouseEnter={() => soundManager.playHover()}
+                whileHover={{ x: 4 }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all btn-press ${
+                  isActive
+                    ? "bg-gradient-to-r from-secondary/20 to-accent/20 border border-secondary/30 text-white"
+                    : "hover:bg-muted/20"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="font-medium">
+                  {language === "en"
+                    ? item.labelEn
+                    : item.labelAr}
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="instructorActiveTab"
+                    className="ml-auto w-2 h-2 rounded-full bg-secondary"
+                    style={{
+                      boxShadow:
+                        "0 0 10px rgba(30, 125, 214, 0.8)",
+                    }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-border space-y-2">
+          <Button
+            variant="ghost"
+            className="w-full justify-start rounded-xl hover:bg-muted/20"
+            onClick={() => soundManager.playClick()}
+            onMouseEnter={() => soundManager.playHover()}
+          >
+            <Settings className="w-5 h-5 mr-3" />
+            {language === "en" ? "Settings" : "الإعدادات"}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start rounded-xl hover:bg-destructive/20 text-destructive"
+            onClick={handleLogout}
+            onMouseEnter={() => soundManager.playHover()}
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            {language === "en" ? "Logout" : "تسجيل الخروج"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="ml-72 h-full overflow-y-auto custom-scrollbar">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-2xl border-b border-border">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <h2 className="text-2xl font-black">
+              {
+                menuItems.find((m) => m.id === activeTab)
+                  ?.labelEn
+              }
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {language === "en"
+                ? "Manage your courses and students"
+                : "إدارة دوراتك وطلابك"}
+            </p>
+          </div>
+        </div>
+
+        {/* Dashboard Content */}
+        <div className="max-w-7xl mx-auto p-6">
+          {activeTab === "overview" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  {
+                    icon: Users,
+                    label: "Total Students",
+                    value: "247",
+                    change: "+12",
+                    color: "primary",
+                    glow: "glow-red",
+                  },
+                  {
+                    icon: BookOpen,
+                    label: "Active Courses",
+                    value: "8",
+                    change: "+2",
+                    color: "secondary",
+                    glow: "glow-blue",
+                  },
+                  {
+                    icon: TrendingUp,
+                    label: "Avg Progress",
+                    value: "73%",
+                    change: "+5%",
+                    color: "accent",
+                    glow: "glow-cyan",
+                  },
+                  {
+                    icon: Award,
+                    label: "Completion Rate",
+                    value: "89%",
+                    change: "+3%",
+                    color: "primary",
+                    glow: "glow-gold",
+                  },
+                ].map((stat, index) => {
+                  const Icon = stat.icon;
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ y: -4, scale: 1.02 }}
+                      className={`p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border ${stat.glow} game-card cursor-pointer`}
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div
+                          className={`w-12 h-12 rounded-xl bg-${stat.color}/20 flex items-center justify-center`}
+                        >
+                          <Icon
+                            className={`w-6 h-6 text-${stat.color}`}
+                          />
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className="rounded-lg bg-green-500/20 text-green-400 border-green-500/30"
+                        >
+                          {stat.change}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {stat.label}
+                        </p>
+                        <p className="text-3xl font-black">
+                          {stat.value}
+                        </p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Student Performance & Alerts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Top Performers */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
+                >
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-secondary" />
+                    {language === "en"
+                      ? "Top Performers"
+                      : "المتفوقون"}
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      {
+                        name: "Sarah Chen",
+                        score: 98,
+                        progress: 95,
+                      },
+                      {
+                        name: "Marcus Johnson",
+                        score: 96,
+                        progress: 92,
+                      },
+                      {
+                        name: "Aisha Patel",
+                        score: 94,
+                        progress: 88,
+                      },
+                      {
+                        name: "Diego Martinez",
+                        score: 92,
+                        progress: 90,
+                      },
+                    ].map((student, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        whileHover={{ x: 4 }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press"
+                        onClick={() => soundManager.playClick()}
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary text-white font-bold">
+                          {i + 1}
+                        </div>
+                        <Avatar className="w-10 h-10">
+                          <AvatarFallback>
+                            {student.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">
+                            {student.name}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                              value={student.progress}
+                              className="h-1.5 flex-1"
+                            />
+                            <span className="text-xs text-muted-foreground">
+                              {student.score}%
+                            </span>
+                          </div>
+                        </div>
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                          {student.score}
+                        </Badge>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Students Needing Support */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
+                >
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-primary" />
+                    {language === "en"
+                      ? "Need Support"
+                      : "يحتاجون الدعم"}
+                  </h3>
+                  <div className="space-y-3">
+                    {[
+                      {
+                        name: "Emma Wilson",
+                        issue: "Low engagement",
+                        days: 5,
+                      },
+                      {
+                        name: "James Lee",
+                        issue: "Missed deadlines",
+                        days: 3,
+                      },
+                      {
+                        name: "Sofia Rodriguez",
+                        issue: "Below average",
+                        days: 7,
+                      },
+                    ].map((student, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        whileHover={{ x: -4 }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press"
+                        onClick={() => soundManager.playClick()}
+                      >
+                        <Avatar className="w-10 h-10 border-2 border-primary/30">
+                          <AvatarFallback>
+                            {student.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">
+                            {student.name}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            <span>
+                              {student.issue} • {student.days}d
+                              ago
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="rounded-lg bg-primary/20 hover:bg-primary/30 text-primary border-primary/30"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            soundManager.playClick();
+                          }}
+                        >
+                          Contact
+                        </Button>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Recent Activity */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
+              >
+                <h3 className="text-xl font-bold mb-4">
+                  {language === "en"
+                    ? "Recent Activity"
+                    : "النشاط الأخير"}
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    {
+                      icon: CheckCircle,
+                      text: "15 students completed Module 3",
+                      time: "2h ago",
+                      color: "text-green-400",
+                    },
+                    {
+                      icon: MessageSquare,
+                      text: "New question in Web Development",
+                      time: "4h ago",
+                      color: "text-blue-400",
+                    },
+                    {
+                      icon: Award,
+                      text: "Sarah Chen earned 'Perfect Score' badge",
+                      time: "5h ago",
+                      color: "text-yellow-400",
+                    },
+                    {
+                      icon: AlertCircle,
+                      text: "Assignment deadline in 2 days",
+                      time: "1d ago",
+                      color: "text-orange-400",
+                    },
+                  ].map((activity, i) => {
+                    const Icon = activity.icon;
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/20"
+                      >
+                        <Icon
+                          className={`w-5 h-5 ${activity.color}`}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm">
+                            {activity.text}
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {activity.time}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {activeTab === "students" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-center text-muted-foreground py-12">
+                {language === "en"
+                  ? "Student management will be here..."
+                  : "إدارة الطلاب ستكون هنا..."}
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
