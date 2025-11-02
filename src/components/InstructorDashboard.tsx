@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import {
   BarChart3,
@@ -13,12 +13,16 @@ import {
   Clock,
   Award,
   Zap,
+  Menu,
+  X,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { soundManager } from "../utils/soundManager";
+import { AnimatedBackground } from "./AnimatedBackground";
+import { CourseManagement } from "./instructor/CourseManagement";
 
 interface InstructorDashboardProps {
   user: any;
@@ -32,6 +36,7 @@ export function InstructorDashboard({
   language,
 }: InstructorDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const menuItems = [
     {
@@ -63,6 +68,7 @@ export function InstructorDashboard({
   const handleTabChange = (tabId: string) => {
     soundManager.playTabSwitch();
     setActiveTab(tabId);
+    setSidebarOpen(false);
   };
 
   const handleLogout = () => {
@@ -71,12 +77,53 @@ export function InstructorDashboard({
   };
 
   return (
-    <div className="fixed inset-0 game-background overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 hex-pattern opacity-10" />
+    <div className="fixed inset-0 overflow-hidden">
+      {/* Mobile Menu Toggle */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        onClick={() => {
+          soundManager.playClick();
+          setSidebarOpen(!sidebarOpen);
+        }}
+        className={`fixed top-4 sm:top-6 z-50 lg:hidden w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-card/80 backdrop-blur-xl border border-border flex items-center justify-center btn-press hover:scale-105 transition-transform ${
+          language === "ar" ? "right-4 sm:right-6" : "left-4 sm:left-6"
+        }`}
+      >
+        {sidebarOpen ? (
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
+        ) : (
+          <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+        )}
+      </motion.button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 lg:hidden"
+        />
+      )}
 
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 bottom-0 w-72 bg-card/80 backdrop-blur-2xl border-r border-border flex flex-col">
+      <motion.div
+        initial={false}
+        animate={{
+          x: sidebarOpen || typeof window !== 'undefined' && window.innerWidth >= 1024 ? 0 : language === "ar" ? 300 : -300,
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 260,
+          damping: 26,
+        }}
+        className={`fixed top-0 bottom-0 w-64 sm:w-72 lg:w-80 bg-card/90 backdrop-blur-2xl border-border z-40 flex flex-col lg:translate-x-0 ${
+          language === "ar" ? "right-0 border-l" : "left-0 border-r"
+        }`}
+      >
         {/* Logo */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
@@ -170,20 +217,21 @@ export function InstructorDashboard({
             {language === "en" ? "Logout" : "تسجيل الخروج"}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content */}
-      <div className="ml-72 h-full overflow-y-auto custom-scrollbar">
+      <div className={`h-full overflow-y-auto custom-scrollbar transition-all duration-300 ${
+        language === "ar" ? "lg:mr-80 mr-0" : "lg:ml-80 ml-0"
+      }`}>
         {/* Top Bar */}
-        <div className="sticky top-0 z-30 bg-card/80 backdrop-blur-2xl border-b border-border">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <h2 className="text-2xl font-black">
-              {
-                menuItems.find((m) => m.id === activeTab)
-                  ?.labelEn
-              }
+        <div className="sticky top-0 z-20 bg-card/80 backdrop-blur-2xl border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5 pt-16 lg:pt-4">
+            <h2 className="text-xl sm:text-2xl font-black">
+              {language === "en"
+                ? menuItems.find((m) => m.id === activeTab)?.labelEn
+                : menuItems.find((m) => m.id === activeTab)?.labelAr}
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {language === "en"
                 ? "Manage your courses and students"
                 : "إدارة دوراتك وطلابك"}
@@ -192,7 +240,7 @@ export function InstructorDashboard({
         </div>
 
         {/* Dashboard Content */}
-        <div className="max-w-7xl mx-auto p-6">
+        <div className="max-w-7xl mx-auto p-4 sm:p-5 md:p-6">
           {activeTab === "overview" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -200,37 +248,37 @@ export function InstructorDashboard({
               className="space-y-6"
             >
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
                 {[
                   {
                     icon: Users,
-                    label: "Total Students",
-                    value: "247",
-                    change: "+12",
+                    labelEn: "Total Students",
+                    labelAr: "إجمالي الطلاب",
+                    value: user?.totalStudents || "0",
                     color: "primary",
                     glow: "glow-red",
                   },
                   {
                     icon: BookOpen,
-                    label: "Active Courses",
-                    value: "8",
-                    change: "+2",
+                    labelEn: "Active Courses",
+                    labelAr: "الدورات النشطة",
+                    value: user?.activeCourses || "0",
                     color: "secondary",
                     glow: "glow-blue",
                   },
                   {
                     icon: TrendingUp,
-                    label: "Avg Progress",
-                    value: "73%",
-                    change: "+5%",
+                    labelEn: "Avg Progress",
+                    labelAr: "متوسط التقدم",
+                    value: user?.avgProgress ? `${user.avgProgress}%` : "0%",
                     color: "accent",
                     glow: "glow-cyan",
                   },
                   {
                     icon: Award,
-                    label: "Completion Rate",
-                    value: "89%",
-                    change: "+3%",
+                    labelEn: "Completion Rate",
+                    labelAr: "معدل الإكمال",
+                    value: user?.completionRate ? `${user.completionRate}%` : "0%",
                     color: "primary",
                     glow: "glow-gold",
                   },
@@ -243,28 +291,23 @@ export function InstructorDashboard({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ y: -4, scale: 1.02 }}
-                      className={`p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border ${stat.glow} game-card cursor-pointer`}
+                      whileTap={{ scale: 0.98 }}
+                      className={`p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-card/50 backdrop-blur-xl border border-border ${stat.glow} game-card cursor-pointer`}
                     >
-                      <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start justify-between mb-3 sm:mb-4">
                         <div
-                          className={`w-12 h-12 rounded-xl bg-${stat.color}/20 flex items-center justify-center`}
+                          className={`w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-${stat.color}/20 flex items-center justify-center flex-shrink-0`}
                         >
                           <Icon
-                            className={`w-6 h-6 text-${stat.color}`}
+                            className={`w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-6 md:h-6 text-${stat.color}`}
                           />
                         </div>
-                        <Badge
-                          variant="secondary"
-                          className="rounded-lg bg-green-500/20 text-green-400 border-green-500/30"
-                        >
-                          {stat.change}
-                        </Badge>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          {stat.label}
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
+                          {language === "en" ? stat.labelEn : stat.labelAr}
                         </p>
-                        <p className="text-3xl font-black">
+                        <p className="text-xl sm:text-2xl md:text-3xl font-black">
                           {stat.value}
                         </p>
                       </div>
@@ -281,74 +324,62 @@ export function InstructorDashboard({
                   animate={{ opacity: 1, x: 0 }}
                   className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
                 >
-                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-secondary" />
+                  <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
                     {language === "en"
                       ? "Top Performers"
                       : "المتفوقون"}
                   </h3>
-                  <div className="space-y-3">
-                    {[
-                      {
-                        name: "Sarah Chen",
-                        score: 98,
-                        progress: 95,
-                      },
-                      {
-                        name: "Marcus Johnson",
-                        score: 96,
-                        progress: 92,
-                      },
-                      {
-                        name: "Aisha Patel",
-                        score: 94,
-                        progress: 88,
-                      },
-                      {
-                        name: "Diego Martinez",
-                        score: 92,
-                        progress: 90,
-                      },
-                    ].map((student, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        whileHover={{ x: 4 }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press"
-                        onClick={() => soundManager.playClick()}
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary text-white font-bold">
-                          {i + 1}
-                        </div>
-                        <Avatar className="w-10 h-10">
-                          <AvatarFallback>
-                            {student.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">
-                            {student.name}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={student.progress}
-                              className="h-1.5 flex-1"
-                            />
-                            <span className="text-xs text-muted-foreground">
-                              {student.score}%
-                            </span>
+                  <div className="space-y-2.5 sm:space-y-3">
+                    {user?.topPerformers && user.topPerformers.length > 0 ? (
+                      user.topPerformers.map((student: any, i: number) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          whileHover={{ x: 4 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press"
+                          onClick={() => soundManager.playClick()}
+                        >
+                          <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-primary to-secondary text-white text-xs sm:text-sm font-bold flex-shrink-0">
+                            {i + 1}
                           </div>
-                        </div>
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                          {student.score}
-                        </Badge>
-                      </motion.div>
-                    ))}
+                          <Avatar className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0">
+                            <AvatarFallback>
+                              {student.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-xs sm:text-sm truncate">
+                              {student.name}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <Progress
+                                value={student.progress}
+                                className="h-1 sm:h-1.5 flex-1"
+                              />
+                              <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0">
+                                {student.score}%
+                              </span>
+                            </div>
+                          </div>
+                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] sm:text-xs flex-shrink-0">
+                            {student.score}
+                          </Badge>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 sm:py-8 text-muted-foreground text-xs sm:text-sm">
+                        {language === "en"
+                          ? "No student data available"
+                          : "لا توجد بيانات طلاب"}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
 
@@ -358,71 +389,63 @@ export function InstructorDashboard({
                   animate={{ opacity: 1, x: 0 }}
                   className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
                 >
-                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     {language === "en"
                       ? "Need Support"
                       : "يحتاجون الدعم"}
                   </h3>
-                  <div className="space-y-3">
-                    {[
-                      {
-                        name: "Emma Wilson",
-                        issue: "Low engagement",
-                        days: 5,
-                      },
-                      {
-                        name: "James Lee",
-                        issue: "Missed deadlines",
-                        days: 3,
-                      },
-                      {
-                        name: "Sofia Rodriguez",
-                        issue: "Below average",
-                        days: 7,
-                      },
-                    ].map((student, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        whileHover={{ x: -4 }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press"
-                        onClick={() => soundManager.playClick()}
-                      >
-                        <Avatar className="w-10 h-10 border-2 border-primary/30">
-                          <AvatarFallback>
-                            {student.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">
-                            {student.name}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            <span>
-                              {student.issue} • {student.days}d
-                              ago
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="rounded-lg bg-primary/20 hover:bg-primary/30 text-primary border-primary/30"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            soundManager.playClick();
-                          }}
+                  <div className="space-y-2.5 sm:space-y-3">
+                    {user?.studentsNeedingSupport && user.studentsNeedingSupport.length > 0 ? (
+                      user.studentsNeedingSupport.map((student: any, i: number) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          whileHover={{ x: -4 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press"
+                          onClick={() => soundManager.playClick()}
                         >
-                          Contact
-                        </Button>
-                      </motion.div>
-                    ))}
+                          <Avatar className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-primary/30 flex-shrink-0">
+                            <AvatarFallback>
+                              {student.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-xs sm:text-sm truncate">
+                              {student.name}
+                            </p>
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                              <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {student.issue} • {student.days}d ago
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="rounded-lg bg-primary/20 hover:bg-primary/30 text-primary border-primary/30 text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              soundManager.playClick();
+                            }}
+                          >
+                            {language === "en" ? "Contact" : "تواصل"}
+                          </Button>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="text-center py-6 sm:py-8 text-muted-foreground text-xs sm:text-sm">
+                        {language === "en"
+                          ? "All students are on track"
+                          : "جميع الطلاب على المسار الصحيح"}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </div>
@@ -431,63 +454,46 @@ export function InstructorDashboard({
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
+                className="p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-card/50 backdrop-blur-xl border border-border"
               >
-                <h3 className="text-xl font-bold mb-4">
+                <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
                   {language === "en"
                     ? "Recent Activity"
                     : "النشاط الأخير"}
                 </h3>
-                <div className="space-y-3">
-                  {[
-                    {
-                      icon: CheckCircle,
-                      text: "15 students completed Module 3",
-                      time: "2h ago",
-                      color: "text-green-400",
-                    },
-                    {
-                      icon: MessageSquare,
-                      text: "New question in Web Development",
-                      time: "4h ago",
-                      color: "text-blue-400",
-                    },
-                    {
-                      icon: Award,
-                      text: "Sarah Chen earned 'Perfect Score' badge",
-                      time: "5h ago",
-                      color: "text-yellow-400",
-                    },
-                    {
-                      icon: AlertCircle,
-                      text: "Assignment deadline in 2 days",
-                      time: "1d ago",
-                      color: "text-orange-400",
-                    },
-                  ].map((activity, i) => {
-                    const Icon = activity.icon;
-                    return (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/20"
-                      >
-                        <Icon
-                          className={`w-5 h-5 ${activity.color}`}
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm">
-                            {activity.text}
-                          </p>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {activity.time}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
+                <div className="space-y-2.5 sm:space-y-3">
+                  {user?.recentActivity && user.recentActivity.length > 0 ? (
+                    user.recentActivity.map((activity: any, i: number) => {
+                      const Icon = activity.icon || CheckCircle;
+                      return (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-muted/20"
+                        >
+                          <Icon
+                            className={`w-4 h-4 sm:w-5 sm:h-5 ${activity.color || "text-green-400"} flex-shrink-0`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs sm:text-sm truncate">
+                              {activity.text}
+                            </p>
+                          </div>
+                          <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0">
+                            {activity.time}
+                          </span>
+                        </motion.div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-6 sm:py-8 text-muted-foreground text-xs sm:text-sm">
+                      {language === "en"
+                        ? "No recent activity"
+                        : "لا يوجد نشاط حديث"}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
@@ -502,6 +508,28 @@ export function InstructorDashboard({
                 {language === "en"
                   ? "Student management will be here..."
                   : "إدارة الطلاب ستكون هنا..."}
+              </p>
+            </motion.div>
+          )}
+
+          {activeTab === "courses" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CourseManagement language={language} />
+            </motion.div>
+          )}
+
+          {activeTab === "messages" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <p className="text-center text-muted-foreground py-12">
+                {language === "en"
+                  ? "Messages will be here..."
+                  : "الرسائل ستكون هنا..."}
               </p>
             </motion.div>
           )}

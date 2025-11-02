@@ -16,25 +16,43 @@ import {
   Server,
   Cpu,
   HardDrive,
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  Image as ImageIcon,
+  Mail,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { soundManager } from "../utils/soundManager";
+import { toast } from "sonner@2.0.3";
+import { AnimatedBackground } from "./AnimatedBackground";
 
 interface AdminDashboardProps {
   user: any;
   onLogout: () => void;
   language: "en" | "ar";
+  registrationRequests?: any[];
+  onApproveRequest?: (requestId: string) => void;
+  onRejectRequest?: (requestId: string) => void;
 }
 
 export function AdminDashboard({
   user,
   onLogout,
   language,
+  registrationRequests = [],
+  onApproveRequest,
+  onRejectRequest,
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
+
+  const pendingRequests = registrationRequests.filter(
+    (req) => req.status === "pending"
+  );
 
   const menuItems = [
     {
@@ -42,6 +60,13 @@ export function AdminDashboard({
       icon: BarChart3,
       labelEn: "Overview",
       labelAr: "نظرة عامة",
+    },
+    {
+      id: "requests",
+      icon: Clock,
+      labelEn: "Requests",
+      labelAr: "الطلبات",
+      badge: pendingRequests.length,
     },
     {
       id: "users",
@@ -73,33 +98,30 @@ export function AdminDashboard({
     onLogout();
   };
 
+  const handleApprove = (request: any) => {
+    soundManager.playSuccess();
+    onApproveRequest?.(request.id);
+    toast.success(
+      language === "en"
+        ? `${request.name} has been approved!`
+        : `تمت الموافقة على ${request.name}!`
+    );
+  };
+
+  const handleReject = (request: any) => {
+    soundManager.playClick();
+    onRejectRequest?.(request.id);
+    toast.error(
+      language === "en"
+        ? `${request.name} has been rejected`
+        : `تم رفض ${request.name}`
+    );
+  };
+
   return (
     <div className="fixed inset-0 game-background overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute inset-0 web-pattern opacity-10" />
-
-      {/* Floating Grid Effect */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 rounded-full bg-accent/40"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0.2, 0.8, 0.2],
-              scale: [1, 1.5, 1],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-      </div>
+      <AnimatedBackground />
 
       {/* Sidebar */}
       <div className="fixed left-0 top-0 bottom-0 w-72 bg-card/80 backdrop-blur-2xl border-r border-border flex flex-col">
@@ -160,7 +182,15 @@ export function AdminDashboard({
                     ? item.labelEn
                     : item.labelAr}
                 </span>
-                {isActive && (
+                {item.badge !== undefined && item.badge > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-auto bg-primary text-white rounded-full px-2 py-0.5 text-xs"
+                  >
+                    {item.badge}
+                  </Badge>
+                )}
+                {isActive && !item.badge && (
                   <motion.div
                     layoutId="adminActiveTab"
                     className="ml-auto w-2 h-2 rounded-full bg-accent"
@@ -541,6 +571,182 @@ export function AdminDashboard({
                   ))}
                 </div>
               </motion.div>
+            </motion.div>
+          )}
+
+          {activeTab === "requests" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {pendingRequests.length === 0 ? (
+                <div className="text-center py-12">
+                  <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    {language === "en"
+                      ? "No pending requests"
+                      : "لا توجد طلبات معلقة"}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-6">
+                  {pendingRequests.map((request, index) => (
+                    <motion.div
+                      key={request.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border glow-cyan"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="w-14 h-14 border-2 border-primary/50">
+                            <AvatarFallback>
+                              {request.name?.charAt(0) || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-bold text-lg">
+                              {request.name}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {request.email}
+                            </p>
+                            <Badge
+                              variant="secondary"
+                              className={`mt-1 ${
+                                request.role === "student"
+                                  ? "bg-primary/20 text-primary"
+                                  : request.role === "professor"
+                                    ? "bg-secondary/20 text-secondary"
+                                    : "bg-accent/20 text-accent"
+                              }`}
+                            >
+                              {request.role === "student"
+                                ? language === "en"
+                                  ? "Student"
+                                  : "طالب"
+                                : request.role === "professor"
+                                  ? language === "en"
+                                    ? "Professor"
+                                    : "أستاذ"
+                                  : language === "en"
+                                    ? "Teaching Assistant"
+                                    : "مساعد تدريس"}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(
+                              request.timestamp
+                            ).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        {request.role === "student" && (
+                          <>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {language === "en"
+                                  ? "University Code"
+                                  : "الكود الجامعي"}
+                              </p>
+                              <p className="font-medium">
+                                {request.universityCode}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {language === "en"
+                                  ? "National ID"
+                                  : "الرقم القومي"}
+                              </p>
+                              <p className="font-medium font-mono">
+                                {request.nationalId}
+                              </p>
+                            </div>
+                            {request.idPhoto && (
+                              <div className="col-span-2">
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  {language === "en"
+                                    ? "University ID Photo"
+                                    : "صورة بطاقة الجامعة"}
+                                </p>
+                                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/20">
+                                  <ImageIcon className="w-4 h-4" />
+                                  <span className="text-sm">
+                                    {request.idPhoto.name}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {(request.role === "professor" ||
+                          request.role === "ta") && (
+                          <>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {language === "en"
+                                  ? "National ID"
+                                  : "الرقم القومي"}
+                              </p>
+                              <p className="font-medium font-mono">
+                                {request.nationalId}
+                              </p>
+                            </div>
+                            {request.proofDocument && (
+                              <div className="col-span-2">
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  {language === "en"
+                                    ? "Proof Document"
+                                    : "مستند الإثبات"}
+                                </p>
+                                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/20">
+                                  <FileText className="w-4 h-4" />
+                                  <span className="text-sm">
+                                    {request.proofDocument.name}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => handleApprove(request)}
+                          onMouseEnter={() =>
+                            soundManager.playHover()
+                          }
+                          className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90 text-white rounded-xl btn-press"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          {language === "en"
+                            ? "Approve"
+                            : "موافقة"}
+                        </Button>
+                        <Button
+                          onClick={() => handleReject(request)}
+                          onMouseEnter={() =>
+                            soundManager.playHover()
+                          }
+                          variant="destructive"
+                          className="flex-1 rounded-xl btn-press"
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          {language === "en" ? "Reject" : "رفض"}
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 

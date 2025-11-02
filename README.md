@@ -1,7 +1,7 @@
 
-  # Upgradia Academy System Script
+  # Upgradia Academy
 
-  This is a code bundle for Upgradia Academy System Script. The original project is available at https://www.figma.com/design/MCTf1rLwGIRb4puKjKWkzN/Upgradia-Academy-System-Script.
+  This is a code bundle for Upgradia Academy. The original project is available at https://www.figma.com/design/MCTf1rLwGIRb4puKjKWkzN/Upgradia-Academy.
 
   ## Running the code
 

@@ -1,17 +1,5 @@
 import { motion } from "motion/react";
-import {
-  Bell,
-  TrendingUp,
-  Award,
-  BookOpen,
-  Sparkles,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Bell, Calendar, Trophy, Zap, BookOpen, Users } from "lucide-react";
 import { Badge } from "../ui/badge";
 
 interface NewsFeedProps {
@@ -19,235 +7,150 @@ interface NewsFeedProps {
 }
 
 export function NewsFeed({ language }: NewsFeedProps) {
-  const translations = {
-    en: {
-      title: "News Feed",
-      aiSuggestions: "AI Suggestions",
-      announcements: "Announcements",
-      recentActivity: "Recent Activity",
-      viewAll: "View All",
+  const newsItems = [
+    {
+      id: 1,
+      icon: Trophy,
+      titleEn: "New Competition: Code Challenge 2025",
+      titleAr: "مسابقة جديدة: تحدي البرمجة 2025",
+      descEn: "Join our annual coding competition and win amazing prizes!",
+      descAr: "انضم إلى مسابقة البرمجة السنوية واربح جوائز مذهلة!",
+      date: "2025-10-25",
+      type: "competition",
+      color: "from-yellow-500 to-orange-500",
+      badgeEn: "Competition",
+      badgeAr: "مسابقة",
     },
-    ar: {
-      title: "الأخبار",
-      aiSuggestions: "اقتراحات الذكاء الاصطناعي",
-      announcements: "الإعلانات",
-      recentActivity: "النشاط الأخير",
-      viewAll: "عرض الكل",
+    {
+      id: 2,
+      icon: BookOpen,
+      titleEn: "Advanced Machine Learning Course Now Available",
+      titleAr: "دورة التعلم الآلي المتقدم متاحة الآن",
+      descEn: "Dive deep into neural networks and AI with our new course.",
+      descAr: "تعمق في الشبكات العصبية والذكاء الاصطناعي مع دورتنا الجديدة.",
+      date: "2025-10-24",
+      type: "course",
+      color: "from-blue-500 to-cyan-500",
+      badgeEn: "New Course",
+      badgeAr: "دورة جديدة",
     },
+    {
+      id: 3,
+      icon: Zap,
+      titleEn: "System Upgrade: Enhanced Performance",
+      titleAr: "ترقية النظام: أداء محسّن",
+      descEn: "Experience faster loading times and smoother navigation.",
+      descAr: "استمتع بأوقات تحميل أسرع وتصفح أكثر سلاسة.",
+      date: "2025-10-23",
+      type: "update",
+      color: "from-purple-500 to-pink-500",
+      badgeEn: "Update",
+      badgeAr: "تحديث",
+    },
+    {
+      id: 4,
+      icon: Users,
+      titleEn: "Weekly Study Group - Join Us!",
+      titleAr: "مجموعة الدراسة الأسبوعية - انضم إلينا!",
+      descEn: "Collaborative learning sessions every Wednesday at 7 PM.",
+      descAr: "جلسات تعلم تعاونية كل أربعاء الساعة 7 مساءً.",
+      date: "2025-10-22",
+      type: "event",
+      color: "from-green-500 to-emerald-500",
+      badgeEn: "Event",
+      badgeAr: "حدث",
+    },
+  ];
+
+  const getRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date("2025-10-27"); // Current date from context
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return language === "en" ? "Today" : "اليوم";
+    } else if (diffDays === 1) {
+      return language === "en" ? "Yesterday" : "أمس";
+    } else if (diffDays === 2) {
+      return language === "en" ? "2 days ago" : "منذ يومين";
+    } else {
+      return language === "en" ? `${diffDays} days ago` : `منذ ${diffDays} أيام`;
+    }
   };
 
-  const t = translations[language];
-
-  const announcements = [
-    {
-      id: 1,
-      title: "New Course Available: Advanced Web Development",
-      description: "Enroll now and start earning XP!",
-      date: "2 hours ago",
-      type: "course",
-      icon: BookOpen,
-      color: "secondary",
-    },
-    {
-      id: 2,
-      title: "Weekly Leaderboard Updated",
-      description: "You're now ranked #42! Keep climbing!",
-      date: "5 hours ago",
-      type: "achievement",
-      icon: Award,
-      color: "accent",
-    },
-    {
-      id: 3,
-      title: "System Maintenance Scheduled",
-      description:
-        "Platform will be unavailable on Saturday 2:00 AM - 4:00 AM",
-      date: "1 day ago",
-      type: "info",
-      icon: Bell,
-      color: "primary",
-    },
-  ];
-
-  const aiSuggestions = [
-    {
-      id: 1,
-      text: 'You have pending quiz in "Data Structures" - Complete it to earn 50 XP',
-      priority: "high",
-    },
-    {
-      id: 2,
-      text: 'Your engagement in "Algorithms" is low this week. Watch 2 more videos to maintain your streak.',
-      priority: "medium",
-    },
-    {
-      id: 3,
-      text: 'Great job! Your performance in "Database Systems" is 15% above class average.',
-      priority: "positive",
-    },
-  ];
-
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="mb-2">{t.title}</h1>
-        <p className="text-muted-foreground">
-          Stay updated with your learning journey
-        </p>
-      </motion.div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: 0.2 }}
+      className="p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-card/50 backdrop-blur-xl border border-border h-full"
+    >
+      <div className="flex items-center justify-between mb-4 sm:mb-5">
+        <h3 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+          <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          {language === "en" ? "News & Updates" : "الأخبار والتحديثات"}
+        </h3>
+        <Badge variant="secondary" className="text-xs">
+          {newsItems.length}
+        </Badge>
+      </div>
 
-      {/* AI Suggestions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.5 }}
-      >
-        <Card className="bg-gradient-to-br from-secondary/5 to-accent/5 border-secondary/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-secondary">
-              <Sparkles className="w-5 h-5" />
-              {t.aiSuggestions}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {aiSuggestions.map((suggestion, index) => (
-              <motion.div
-                key={suggestion.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: 0.2 + index * 0.1,
-                  duration: 0.5,
-                }}
-                className={`p-4 rounded-lg border-l-4 ${
-                  suggestion.priority === "high"
-                    ? "bg-primary/10 border-primary"
-                    : suggestion.priority === "medium"
-                      ? "bg-secondary/10 border-secondary"
-                      : "bg-accent/10 border-accent"
-                }`}
-              >
-                <p className="text-sm">{suggestion.text}</p>
-              </motion.div>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Announcements */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>{t.announcements}</span>
-              <button className="text-sm text-accent hover:text-accent/80 transition-colors">
-                {t.viewAll}
-              </button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {announcements.map((announcement, index) => (
-              <motion.div
-                key={announcement.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: 0.3 + index * 0.1,
-                  duration: 0.5,
-                }}
-                className="flex gap-4 p-4 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
-              >
-                <div
-                  className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                    announcement.color === "primary"
-                      ? "bg-primary/20 text-primary"
-                      : announcement.color === "secondary"
-                        ? "bg-secondary/20 text-secondary"
-                        : "bg-accent/20 text-accent"
-                  } group-hover:scale-110 transition-transform`}
-                >
-                  <announcement.icon className="w-6 h-6" />
+      <div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto custom-scrollbar pr-2">
+        {newsItems.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, x: language === "ar" ? 20 : -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.3 }}
+              whileHover={{ x: language === "ar" ? -3 : 3, scale: 1.01 }}
+              className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-muted/20 hover:bg-muted/30 transition-all cursor-pointer btn-press border border-border/50 hover:border-primary/30"
+            >
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0 glow-${item.type === 'competition' ? 'gold' : item.type === 'course' ? 'blue' : item.type === 'update' ? 'cyan' : 'green'}`}>
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
                 </div>
+
+                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="mb-1 truncate">
-                    {announcement.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {announcement.description}
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h4 className="font-medium text-xs sm:text-sm line-clamp-1">
+                      {language === "en" ? item.titleEn : item.titleAr}
+                    </h4>
+                    <Badge 
+                      variant="outline" 
+                      className="text-[9px] sm:text-[10px] px-1.5 py-0 h-5 flex-shrink-0"
+                    >
+                      {language === "en" ? item.badgeEn : item.badgeAr}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-2 line-clamp-2">
+                    {language === "en" ? item.descEn : item.descAr}
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {announcement.date}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </CardContent>
-        </Card>
-      </motion.div>
 
-      {/* Quick Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground">
+                    <Calendar className="w-3 h-3" />
+                    <span>{getRelativeTime(item.date)}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* View All Button */}
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="w-full mt-4 py-2 sm:py-2.5 px-4 rounded-lg sm:rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs sm:text-sm font-medium transition-colors border border-primary/20 hover:border-primary/40"
       >
-        {[
-          {
-            label: "Courses Active",
-            value: "6",
-            icon: BookOpen,
-            color: "primary",
-          },
-          {
-            label: "XP This Week",
-            value: "+120",
-            icon: TrendingUp,
-            color: "secondary",
-          },
-          {
-            label: "Achievements",
-            value: "18",
-            icon: Award,
-            color: "accent",
-          },
-        ].map((stat, index) => (
-          <Card
-            key={index}
-            className="hover:scale-105 transition-transform cursor-pointer"
-          >
-            <CardContent className="p-6 flex items-center gap-4">
-              <div
-                className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                  stat.color === "primary"
-                    ? "bg-primary/20 text-primary"
-                    : stat.color === "secondary"
-                      ? "bg-secondary/20 text-secondary"
-                      : "bg-accent/20 text-accent"
-                }`}
-              >
-                <stat.icon className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {stat.label}
-                </p>
-                <p className="text-2xl font-bold">
-                  {stat.value}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </motion.div>
-    </div>
+        {language === "en" ? "View All News" : "عرض جميع الأخبار"}
+      </motion.button>
+    </motion.div>
   );
 }
